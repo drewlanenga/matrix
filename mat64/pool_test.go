@@ -19,10 +19,10 @@ func (s *S) TestPool(c *check.C) {
 			for k := 0; k < 5; k++ {
 				w = getWorkspace(i, j, true)
 				m = NewDense(i, j, nil)
-				c.Check(w.mat, check.DeepEquals, m.mat)
+				c.Check(w.Mat, check.DeepEquals, m.Mat)
 				c.Check(w.capRows, check.DeepEquals, m.capRows)
 				c.Check(w.capCols, check.DeepEquals, m.capCols)
-				c.Check(cap(w.mat.Data) < 2*len(w.mat.Data), check.Equals, true, check.Commentf("r: %d c: %d -> len: %d cap: %d", i, j, len(w.mat.Data), cap(w.mat.Data)))
+				c.Check(cap(w.Mat.Data) < 2*len(w.Mat.Data), check.Equals, true, check.Commentf("r: %d c: %d -> len: %d cap: %d", i, j, len(w.Mat.Data), cap(w.Mat.Data)))
 			}
 			w.Set(0, 0, math.NaN())
 			for k := 0; k < 5; k++ {
@@ -31,10 +31,10 @@ func (s *S) TestPool(c *check.C) {
 			for k := 0; k < 5; k++ {
 				w = getWorkspace(i, j, true)
 				m = NewDense(i, j, nil)
-				c.Check(w.mat, check.DeepEquals, m.mat)
+				c.Check(w.Mat, check.DeepEquals, m.Mat)
 				c.Check(w.capRows, check.DeepEquals, m.capRows)
 				c.Check(w.capCols, check.DeepEquals, m.capCols)
-				c.Check(cap(w.mat.Data) < 2*len(w.mat.Data), check.Equals, true, check.Commentf("r: %d c: %d -> len: %d cap: %d", i, j, len(w.mat.Data), cap(w.mat.Data)))
+				c.Check(cap(w.Mat.Data) < 2*len(w.Mat.Data), check.Equals, true, check.Commentf("r: %d c: %d -> len: %d cap: %d", i, j, len(w.Mat.Data), cap(w.Mat.Data)))
 			}
 		}
 	}

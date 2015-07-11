@@ -61,7 +61,7 @@ var (
 
 // Dense is a dense matrix representation.
 type Dense struct {
-	mat blas64.General
+	Mat blas64.General
 
 	capRows, capCols int
 }
@@ -79,7 +79,7 @@ func NewDense(r, c int, mat []float64) *Dense {
 		mat = make([]float64, r*c)
 	}
 	return &Dense{
-		mat: blas64.General{
+		Mat: blas64.General{
 			Rows:   r,
 			Cols:   c,
 			Stride: c,
@@ -93,22 +93,22 @@ func NewDense(r, c int, mat []float64) *Dense {
 // reuseAs resizes an empty matrix to a r×c matrix,
 // or checks that a non-empty matrix is r×c.
 func (m *Dense) reuseAs(r, c int) {
-	if m.mat.Rows > m.capRows || m.mat.Cols > m.capCols {
+	if m.Mat.Rows > m.capRows || m.Mat.Cols > m.capCols {
 		// Panic as a string, not a mat64.Error.
 		panic("mat64: caps not correctly set")
 	}
 	if m.isZero() {
-		m.mat = blas64.General{
+		m.Mat = blas64.General{
 			Rows:   r,
 			Cols:   c,
 			Stride: c,
-			Data:   use(m.mat.Data, r*c),
+			Data:   use(m.Mat.Data, r*c),
 		}
 		m.capRows = r
 		m.capCols = c
 		return
 	}
-	if r != m.mat.Rows || c != m.mat.Cols {
+	if r != m.Mat.Rows || c != m.Mat.Cols {
 		panic(ErrShape)
 	}
 }
@@ -116,7 +116,7 @@ func (m *Dense) reuseAs(r, c int) {
 func (m *Dense) isZero() bool {
 	// It must be the case that m.Dims() returns
 	// zeros in this case. See comment in Reset().
-	return m.mat.Stride == 0
+	return m.Mat.Stride == 0
 }
 
 // DenseCopyOf returns a newly allocated copy of the elements of a.
@@ -131,16 +131,16 @@ func DenseCopyOf(a Matrix) *Dense {
 // in b.
 func (m *Dense) SetRawMatrix(b blas64.General) {
 	m.capRows, m.capCols = b.Rows, b.Cols
-	m.mat = b
+	m.Mat = b
 }
 
 // RawMatrix returns the underlying blas64.General used by the receiver.
 // Changes to elements in the receiver following the call will be reflected
 // in returned blas64.General.
-func (m *Dense) RawMatrix() blas64.General { return m.mat }
+func (m *Dense) RawMatrix() blas64.General { return m.Mat }
 
 // Dims returns the number of rows and columns in the matrix.
-func (m *Dense) Dims() (r, c int) { return m.mat.Rows, m.mat.Cols }
+func (m *Dense) Dims() (r, c int) { return m.Mat.Rows, m.Mat.Cols }
 
 // Caps returns the number of rows and columns in the backing matrix.
 func (m *Dense) Caps() (r, c int) { return m.capRows, m.capCols }
@@ -150,16 +150,16 @@ func (m *Dense) Caps() (r, c int) { return m.capRows, m.capCols }
 //
 // See the Vectorer interface for more information.
 func (m *Dense) Col(dst []float64, j int) []float64 {
-	if j >= m.mat.Cols || j < 0 {
+	if j >= m.Mat.Cols || j < 0 {
 		panic(ErrColAccess)
 	}
 
 	if dst == nil {
-		dst = make([]float64, m.mat.Rows)
+		dst = make([]float64, m.Mat.Rows)
 	}
-	dst = dst[:min(len(dst), m.mat.Rows)]
+	dst = dst[:min(len(dst), m.Mat.Rows)]
 	blas64.Copy(len(dst),
-		blas64.Vector{Inc: m.mat.Stride, Data: m.mat.Data[j:]},
+		blas64.Vector{Inc: m.Mat.Stride, Data: m.Mat.Data[j:]},
 		blas64.Vector{Inc: 1, Data: dst},
 	)
 
@@ -170,15 +170,15 @@ func (m *Dense) Col(dst []float64, j int) []float64 {
 //
 // See ColViewer for more information.
 func (m *Dense) ColView(j int) *Vector {
-	if j >= m.mat.Cols || j < 0 {
+	if j >= m.Mat.Cols || j < 0 {
 		panic(ErrColAccess)
 	}
 	return &Vector{
-		mat: blas64.Vector{
-			Inc:  m.mat.Stride,
-			Data: m.mat.Data[j : (m.mat.Rows-1)*m.mat.Stride+j+1],
+		Mat: blas64.Vector{
+			Inc:  m.Mat.Stride,
+			Data: m.Mat.Data[j : (m.Mat.Rows-1)*m.Mat.Stride+j+1],
 		},
-		n: m.mat.Rows,
+		n: m.Mat.Rows,
 	}
 }
 
@@ -187,16 +187,16 @@ func (m *Dense) ColView(j int) *Vector {
 //
 // See the VectorSetter interface for more information.
 func (m *Dense) SetCol(j int, src []float64) int {
-	if j >= m.mat.Cols || j < 0 {
+	if j >= m.Mat.Cols || j < 0 {
 		panic(ErrColAccess)
 	}
 
-	blas64.Copy(min(len(src), m.mat.Rows),
+	blas64.Copy(min(len(src), m.Mat.Rows),
 		blas64.Vector{Inc: 1, Data: src},
-		blas64.Vector{Inc: m.mat.Stride, Data: m.mat.Data[j:]},
+		blas64.Vector{Inc: m.Mat.Stride, Data: m.Mat.Data[j:]},
 	)
 
-	return min(len(src), m.mat.Rows)
+	return min(len(src), m.Mat.Rows)
 }
 
 // Row copies the elements in the ith row of the matrix into the slice dst.
@@ -204,12 +204,12 @@ func (m *Dense) SetCol(j int, src []float64) int {
 //
 // See the Vectorer interface for more information.
 func (m *Dense) Row(dst []float64, i int) []float64 {
-	if i >= m.mat.Rows || i < 0 {
+	if i >= m.Mat.Rows || i < 0 {
 		panic(ErrRowAccess)
 	}
 
 	if dst == nil {
-		dst = make([]float64, m.mat.Cols)
+		dst = make([]float64, m.Mat.Cols)
 	}
 	copy(dst, m.rowView(i))
 
@@ -221,42 +221,42 @@ func (m *Dense) Row(dst []float64, i int) []float64 {
 //
 // See the VectorSetter interface for more information.
 func (m *Dense) SetRow(i int, src []float64) int {
-	if i >= m.mat.Rows || i < 0 {
+	if i >= m.Mat.Rows || i < 0 {
 		panic(ErrRowAccess)
 	}
 
 	copy(m.rowView(i), src)
 
-	return min(len(src), m.mat.Cols)
+	return min(len(src), m.Mat.Cols)
 }
 
 // RowView returns a Vector reflecting row i, backed by the matrix data.
 //
 // See RowViewer for more information.
 func (m *Dense) RowView(i int) *Vector {
-	if i >= m.mat.Rows || i < 0 {
+	if i >= m.Mat.Rows || i < 0 {
 		panic(ErrRowAccess)
 	}
 	return &Vector{
-		mat: blas64.Vector{
+		Mat: blas64.Vector{
 			Inc:  1,
-			Data: m.mat.Data[i*m.mat.Stride : i*m.mat.Stride+m.mat.Cols],
+			Data: m.Mat.Data[i*m.Mat.Stride : i*m.Mat.Stride+m.Mat.Cols],
 		},
-		n: m.mat.Cols,
+		n: m.Mat.Cols,
 	}
 }
 
 // RawRowView returns a slice backed by the same array as backing the
 // receiver.
 func (m *Dense) RawRowView(i int) []float64 {
-	if i >= m.mat.Rows || i < 0 {
+	if i >= m.Mat.Rows || i < 0 {
 		panic(ErrRowAccess)
 	}
 	return m.rowView(i)
 }
 
 func (m *Dense) rowView(r int) []float64 {
-	return m.mat.Data[r*m.mat.Stride : r*m.mat.Stride+m.mat.Cols]
+	return m.Mat.Data[r*m.Mat.Stride : r*m.Mat.Stride+m.Mat.Cols]
 }
 
 // View returns a new Matrix that shares backing data with the receiver.
@@ -268,9 +268,9 @@ func (m *Dense) View(i, j, r, c int) Matrix {
 		panic(ErrIndexOutOfRange)
 	}
 	t := *m
-	t.mat.Data = t.mat.Data[i*t.mat.Stride+j : (i+r-1)*t.mat.Stride+(j+c)]
-	t.mat.Rows = r
-	t.mat.Cols = c
+	t.Mat.Data = t.Mat.Data[i*t.Mat.Stride+j : (i+r-1)*t.Mat.Stride+(j+c)]
+	t.Mat.Rows = r
+	t.Mat.Cols = c
 	t.capRows -= i
 	t.capCols -= j
 	return &t
@@ -287,25 +287,25 @@ func (m *Dense) Grow(r, c int) Matrix {
 		return m
 	}
 
-	r += m.mat.Rows
-	c += m.mat.Cols
+	r += m.Mat.Rows
+	c += m.Mat.Cols
 
 	var t Dense
 	switch {
-	case m.mat.Rows == 0 || m.mat.Cols == 0:
-		t.mat = blas64.General{
+	case m.Mat.Rows == 0 || m.Mat.Cols == 0:
+		t.Mat = blas64.General{
 			Rows:   r,
 			Cols:   c,
 			Stride: c,
 			// We zero because we don't know how the matrix will be used.
 			// In other places, the mat is immediately filled with a result;
 			// this is not the case here.
-			Data: useZeroed(m.mat.Data, r*c),
+			Data: useZeroed(m.Mat.Data, r*c),
 		}
 	case r > m.capRows || c > m.capCols:
 		cr := max(r, m.capRows)
 		cc := max(c, m.capCols)
-		t.mat = blas64.General{
+		t.Mat = blas64.General{
 			Rows:   r,
 			Cols:   c,
 			Stride: cc,
@@ -315,16 +315,16 @@ func (m *Dense) Grow(r, c int) Matrix {
 		t.capCols = cc
 		// Copy the complete matrix over to the new matrix.
 		// Including elements not currently visible.
-		r, c, m.mat.Rows, m.mat.Cols = m.mat.Rows, m.mat.Cols, m.capRows, m.capCols
+		r, c, m.Mat.Rows, m.Mat.Cols = m.Mat.Rows, m.Mat.Cols, m.capRows, m.capCols
 		t.Copy(m)
-		m.mat.Rows, m.mat.Cols = r, c
+		m.Mat.Rows, m.Mat.Cols = r, c
 		return &t
 	default:
-		t.mat = blas64.General{
-			Data:   m.mat.Data[:(r-1)*m.mat.Stride+c],
+		t.Mat = blas64.General{
+			Data:   m.Mat.Data[:(r-1)*m.Mat.Stride+c],
 			Rows:   r,
 			Cols:   c,
-			Stride: m.mat.Stride,
+			Stride: m.Mat.Stride,
 		}
 	}
 	t.capRows = r
@@ -339,9 +339,9 @@ func (m *Dense) Grow(r, c int) Matrix {
 func (m *Dense) Reset() {
 	// No change of Stride, Rows and Cols to 0
 	// may be made unless all are set to 0.
-	m.mat.Rows, m.mat.Cols, m.mat.Stride = 0, 0, 0
+	m.Mat.Rows, m.Mat.Cols, m.Mat.Stride = 0, 0, 0
 	m.capRows, m.capCols = 0, 0
-	m.mat.Data = m.mat.Data[:0]
+	m.Mat.Data = m.Mat.Data[:0]
 }
 
 // Clone makes a copy of a into the receiver, overwriting the previous value of
@@ -364,13 +364,13 @@ func (m *Dense) Clone(a Matrix) {
 			copy(mat.Data[i*c:(i+1)*c], amat.Data[i*amat.Stride:i*amat.Stride+c])
 		}
 	case Vectorer:
-		mat.Data = use(m.mat.Data, r*c)
+		mat.Data = use(m.Mat.Data, r*c)
 		for i := 0; i < r; i++ {
 			a.Row(mat.Data[i*c:(i+1)*c], i)
 		}
 	default:
-		mat.Data = use(m.mat.Data, r*c)
-		m.mat = mat
+		mat.Data = use(m.Mat.Data, r*c)
+		m.Mat = mat
 		for i := 0; i < r; i++ {
 			for j := 0; j < c; j++ {
 				m.set(i, j, a.At(i, j))
@@ -378,7 +378,7 @@ func (m *Dense) Clone(a Matrix) {
 		}
 		return
 	}
-	m.mat = mat
+	m.Mat = mat
 }
 
 // Copy makes a copy of elements of a into the receiver. It is similar to the
@@ -388,18 +388,18 @@ func (m *Dense) Clone(a Matrix) {
 // See the Copier interface for more information.
 func (m *Dense) Copy(a Matrix) (r, c int) {
 	r, c = a.Dims()
-	r = min(r, m.mat.Rows)
-	c = min(c, m.mat.Cols)
+	r = min(r, m.Mat.Rows)
+	c = min(c, m.Mat.Cols)
 
 	switch a := a.(type) {
 	case RawMatrixer:
 		amat := a.RawMatrix()
 		for i := 0; i < r; i++ {
-			copy(m.mat.Data[i*m.mat.Stride:i*m.mat.Stride+c], amat.Data[i*amat.Stride:i*amat.Stride+c])
+			copy(m.Mat.Data[i*m.Mat.Stride:i*m.Mat.Stride+c], amat.Data[i*amat.Stride:i*amat.Stride+c])
 		}
 	case Vectorer:
 		for i := 0; i < r; i++ {
-			a.Row(m.mat.Data[i*m.mat.Stride:i*m.mat.Stride+c], i)
+			a.Row(m.Mat.Data[i*m.Mat.Stride:i*m.Mat.Stride+c], i)
 		}
 	default:
 		for i := 0; i < r; i++ {
@@ -429,20 +429,20 @@ func (m *Dense) U(a Matrix) {
 
 	if a, ok := a.(RawMatrixer); ok {
 		amat := a.RawMatrix()
-		copy(m.mat.Data[:ac], amat.Data[:ac])
-		for j, ja, jm := 1, amat.Stride, m.mat.Stride; ja < ar*amat.Stride; j, ja, jm = j+1, ja+amat.Stride, jm+m.mat.Stride {
-			zero(m.mat.Data[jm : jm+j])
-			copy(m.mat.Data[jm+j:jm+ac], amat.Data[ja+j:ja+ac])
+		copy(m.Mat.Data[:ac], amat.Data[:ac])
+		for j, ja, jm := 1, amat.Stride, m.Mat.Stride; ja < ar*amat.Stride; j, ja, jm = j+1, ja+amat.Stride, jm+m.Mat.Stride {
+			zero(m.Mat.Data[jm : jm+j])
+			copy(m.Mat.Data[jm+j:jm+ac], amat.Data[ja+j:ja+ac])
 		}
 		return
 	}
 
 	if a, ok := a.(Vectorer); ok {
 		row := make([]float64, ac)
-		copy(m.mat.Data[:m.mat.Cols], a.Row(row, 0))
+		copy(m.Mat.Data[:m.Mat.Cols], a.Row(row, 0))
 		for r := 1; r < ar; r++ {
-			zero(m.mat.Data[r*m.mat.Stride : r*(m.mat.Stride+1)])
-			copy(m.mat.Data[r*(m.mat.Stride+1):r*m.mat.Stride+m.mat.Cols], a.Row(row, r))
+			zero(m.Mat.Data[r*m.Mat.Stride : r*(m.Mat.Stride+1)])
+			copy(m.Mat.Data[r*(m.Mat.Stride+1):r*m.Mat.Stride+m.Mat.Cols], a.Row(row, r))
 		}
 		return
 	}
@@ -456,8 +456,8 @@ func (m *Dense) U(a Matrix) {
 }
 
 func (m *Dense) zeroLower() {
-	for i := 1; i < m.mat.Rows; i++ {
-		zero(m.mat.Data[i*m.mat.Stride : i*m.mat.Stride+i])
+	for i := 1; i < m.Mat.Rows; i++ {
+		zero(m.Mat.Data[i*m.Mat.Stride : i*m.Mat.Stride+i])
 	}
 }
 
@@ -478,10 +478,10 @@ func (m *Dense) L(a Matrix) {
 
 	if a, ok := a.(RawMatrixer); ok {
 		amat := a.RawMatrix()
-		copy(m.mat.Data[:ar], amat.Data[:ar])
-		for j, ja, jm := 1, amat.Stride, m.mat.Stride; ja < ac*amat.Stride; j, ja, jm = j+1, ja+amat.Stride, jm+m.mat.Stride {
-			zero(m.mat.Data[jm : jm+j])
-			copy(m.mat.Data[jm+j:jm+ar], amat.Data[ja+j:ja+ar])
+		copy(m.Mat.Data[:ar], amat.Data[:ar])
+		for j, ja, jm := 1, amat.Stride, m.Mat.Stride; ja < ac*amat.Stride; j, ja, jm = j+1, ja+amat.Stride, jm+m.Mat.Stride {
+			zero(m.Mat.Data[jm : jm+j])
+			copy(m.Mat.Data[jm+j:jm+ar], amat.Data[ja+j:ja+ar])
 		}
 		return
 	}
@@ -504,8 +504,8 @@ func (m *Dense) L(a Matrix) {
 }
 
 func (m *Dense) zeroUpper() {
-	for i := 0; i < m.mat.Rows-1; i++ {
-		zero(m.mat.Data[i*m.mat.Stride+i+1 : (i+1)*m.mat.Stride])
+	for i := 0; i < m.Mat.Rows-1; i++ {
+		zero(m.Mat.Data[i*m.Mat.Stride+i+1 : (i+1)*m.Mat.Stride])
 	}
 }
 
@@ -586,17 +586,17 @@ func (m *Dense) Augment(a, b Matrix) {
 //           ...
 //           [nrows-1,0] ... [nrows-1,ncols-1]
 func (m Dense) MarshalBinary() ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0, m.mat.Rows*m.mat.Cols*sizeFloat64+2*sizeInt64))
-	err := binary.Write(buf, defaultEndian, int64(m.mat.Rows))
+	buf := bytes.NewBuffer(make([]byte, 0, m.Mat.Rows*m.Mat.Cols*sizeFloat64+2*sizeInt64))
+	err := binary.Write(buf, defaultEndian, int64(m.Mat.Rows))
 	if err != nil {
 		return nil, err
 	}
-	err = binary.Write(buf, defaultEndian, int64(m.mat.Cols))
+	err = binary.Write(buf, defaultEndian, int64(m.Mat.Cols))
 	if err != nil {
 		return nil, err
 	}
 
-	for i := 0; i < m.mat.Rows; i++ {
+	for i := 0; i < m.Mat.Rows; i++ {
 		for _, v := range m.rowView(i) {
 			err = binary.Write(buf, defaultEndian, v)
 			if err != nil {
@@ -628,15 +628,15 @@ func (m *Dense) UnmarshalBinary(data []byte) error {
 		return err
 	}
 
-	m.mat.Rows = int(rows)
-	m.mat.Cols = int(cols)
-	m.mat.Stride = int(cols)
+	m.Mat.Rows = int(rows)
+	m.Mat.Cols = int(cols)
+	m.Mat.Stride = int(cols)
 	m.capRows = int(rows)
 	m.capCols = int(cols)
-	m.mat.Data = use(m.mat.Data, m.mat.Rows*m.mat.Cols)
+	m.Mat.Data = use(m.Mat.Data, m.Mat.Rows*m.Mat.Cols)
 
-	for i := range m.mat.Data {
-		err = binary.Read(buf, defaultEndian, &m.mat.Data[i])
+	for i := range m.Mat.Data {
+		err = binary.Read(buf, defaultEndian, &m.Mat.Data[i])
 		if err != nil {
 			return err
 		}

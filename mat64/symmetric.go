@@ -17,7 +17,7 @@ const badSymTriangle = "mat64: blas64.Symmetric not upper"
 
 // SymDense is a symmetric matrix that uses Dense storage.
 type SymDense struct {
-	mat blas64.Symmetric
+	Mat blas64.Symmetric
 }
 
 // Symmetric represents a symmetric matrix (where the element at {i, j} equals
@@ -56,21 +56,21 @@ func NewSymDense(n int, mat []float64) *SymDense {
 }
 
 func (s *SymDense) Dims() (r, c int) {
-	return s.mat.N, s.mat.N
+	return s.Mat.N, s.Mat.N
 }
 
 func (s *SymDense) Symmetric() int {
-	return s.mat.N
+	return s.Mat.N
 }
 
 // RawSymmetric returns the matrix as a blas64.Symmetric. The returned
 // value must be stored in upper triangular format.
 func (s *SymDense) RawSymmetric() blas64.Symmetric {
-	return s.mat
+	return s.Mat
 }
 
 func (s *SymDense) isZero() bool {
-	return s.mat.N == 0
+	return s.Mat.N == 0
 }
 
 func (s *SymDense) AddSym(a, b Symmetric) {
@@ -79,13 +79,13 @@ func (s *SymDense) AddSym(a, b Symmetric) {
 		panic(ErrShape)
 	}
 	if s.isZero() {
-		s.mat = blas64.Symmetric{
+		s.Mat = blas64.Symmetric{
 			N:      n,
 			Stride: n,
-			Data:   use(s.mat.Data, n*n),
+			Data:   use(s.Mat.Data, n*n),
 			Uplo:   blas.Upper,
 		}
-	} else if s.mat.N != n {
+	} else if s.Mat.N != n {
 		panic(ErrShape)
 	}
 
@@ -94,7 +94,7 @@ func (s *SymDense) AddSym(a, b Symmetric) {
 			amat, bmat := a.RawSymmetric(), b.RawSymmetric()
 			for i := 0; i < n; i++ {
 				btmp := bmat.Data[i*bmat.Stride+i : i*bmat.Stride+n]
-				stmp := s.mat.Data[i*s.mat.Stride+i : i*s.mat.Stride+n]
+				stmp := s.Mat.Data[i*s.Mat.Stride+i : i*s.Mat.Stride+n]
 				for j, v := range amat.Data[i*amat.Stride+i : i*amat.Stride+n] {
 					stmp[j] = v + btmp[j]
 				}
@@ -104,7 +104,7 @@ func (s *SymDense) AddSym(a, b Symmetric) {
 	}
 
 	for i := 0; i < n; i++ {
-		stmp := s.mat.Data[i*s.mat.Stride : i*s.mat.Stride+n]
+		stmp := s.Mat.Data[i*s.Mat.Stride : i*s.Mat.Stride+n]
 		for j := i; j < n; j++ {
 			stmp[j] = a.At(i, j) + b.At(i, j)
 		}
@@ -113,7 +113,7 @@ func (s *SymDense) AddSym(a, b Symmetric) {
 
 func (s *SymDense) CopySym(a Symmetric) int {
 	n := a.Symmetric()
-	n = min(n, s.mat.N)
+	n = min(n, s.Mat.N)
 	switch a := a.(type) {
 	case RawSymmetricer:
 		amat := a.RawSymmetric()
@@ -121,11 +121,11 @@ func (s *SymDense) CopySym(a Symmetric) int {
 			panic(badSymTriangle)
 		}
 		for i := 0; i < n; i++ {
-			copy(s.mat.Data[i*s.mat.Stride+i:i*s.mat.Stride+n], amat.Data[i*amat.Stride+i:i*amat.Stride+n])
+			copy(s.Mat.Data[i*s.Mat.Stride+i:i*s.Mat.Stride+n], amat.Data[i*amat.Stride+i:i*amat.Stride+n])
 		}
 	default:
 		for i := 0; i < n; i++ {
-			stmp := s.mat.Data[i*s.mat.Stride : i*s.mat.Stride+n]
+			stmp := s.Mat.Data[i*s.Mat.Stride : i*s.Mat.Stride+n]
 			for j := i; j < n; j++ {
 				stmp[j] = a.At(i, j)
 			}
@@ -138,19 +138,19 @@ func (s *SymDense) CopySym(a Symmetric) int {
 // the result in the receiver
 //  s = a + alpha * x * x'
 func (s *SymDense) SymRankOne(a Symmetric, alpha float64, x []float64) {
-	n := s.mat.N
+	n := s.Mat.N
 	var w SymDense
 	if s == a {
 		w = *s
 	}
 	if w.isZero() {
-		w.mat = blas64.Symmetric{
+		w.Mat = blas64.Symmetric{
 			N:      n,
 			Stride: n,
 			Uplo:   blas.Upper,
-			Data:   use(w.mat.Data, n*n),
+			Data:   use(w.Mat.Data, n*n),
 		}
-	} else if n != w.mat.N {
+	} else if n != w.Mat.N {
 		panic(ErrShape)
 	}
 	if s != a {
@@ -159,7 +159,7 @@ func (s *SymDense) SymRankOne(a Symmetric, alpha float64, x []float64) {
 	if len(x) != n {
 		panic(ErrShape)
 	}
-	blas64.Syr(alpha, blas64.Vector{Inc: 1, Data: x}, w.mat)
+	blas64.Syr(alpha, blas64.Vector{Inc: 1, Data: x}, w.Mat)
 	*s = w
 	return
 }
@@ -168,19 +168,19 @@ func (s *SymDense) SymRankOne(a Symmetric, alpha float64, x []float64) {
 // the result in the receiver
 //  m = a + alpha * (x * y' + y * x')
 func (s *SymDense) RankTwo(a Symmetric, alpha float64, x, y []float64) {
-	n := s.mat.N
+	n := s.Mat.N
 	var w SymDense
 	if s == a {
 		w = *s
 	}
 	if w.isZero() {
-		w.mat = blas64.Symmetric{
+		w.Mat = blas64.Symmetric{
 			N:      n,
 			Stride: n,
 			Uplo:   blas.Upper,
-			Data:   use(w.mat.Data, n*n),
+			Data:   use(w.Mat.Data, n*n),
 		}
-	} else if n != w.mat.N {
+	} else if n != w.Mat.N {
 		panic(ErrShape)
 	}
 	if s != a {
@@ -192,7 +192,7 @@ func (s *SymDense) RankTwo(a Symmetric, alpha float64, x, y []float64) {
 	if len(y) != n {
 		panic(ErrShape)
 	}
-	blas64.Syr2(alpha, blas64.Vector{Inc: 1, Data: x}, blas64.Vector{Inc: 1, Data: y}, w.mat)
+	blas64.Syr2(alpha, blas64.Vector{Inc: 1, Data: x}, blas64.Vector{Inc: 1, Data: y}, w.Mat)
 	*s = w
 	return
 }

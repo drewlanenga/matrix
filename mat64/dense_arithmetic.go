@@ -13,8 +13,8 @@ import (
 
 // Min returns the smallest element value of the receiver.
 func (m *Dense) Min() float64 {
-	min := m.mat.Data[0]
-	for k := 0; k < m.mat.Rows; k++ {
+	min := m.Mat.Data[0]
+	for k := 0; k < m.Mat.Rows; k++ {
 		for _, v := range m.rowView(k) {
 			min = math.Min(min, v)
 		}
@@ -24,8 +24,8 @@ func (m *Dense) Min() float64 {
 
 // Max returns the largest element value of the receiver.
 func (m *Dense) Max() float64 {
-	max := m.mat.Data[0]
-	for k := 0; k < m.mat.Rows; k++ {
+	max := m.Mat.Data[0]
+	for k := 0; k < m.Mat.Rows; k++ {
 		for _, v := range m.rowView(k) {
 			max = math.Max(max, v)
 		}
@@ -37,12 +37,12 @@ func (m *Dense) Max() float64 {
 //
 // See the Tracer interface for more information.
 func (m *Dense) Trace() float64 {
-	if m.mat.Rows != m.mat.Cols {
+	if m.Mat.Rows != m.Mat.Cols {
 		panic(ErrSquare)
 	}
 	var t float64
-	for i := 0; i < len(m.mat.Data); i += m.mat.Stride + 1 {
-		t += m.mat.Data[i]
+	for i := 0; i < len(m.Mat.Data); i += m.Mat.Stride + 1 {
+		t += m.Mat.Data[i]
 	}
 	return t
 }
@@ -61,8 +61,8 @@ func (m *Dense) Norm(ord float64) float64 {
 	var n float64
 	switch {
 	case ord == 1:
-		col := make([]float64, m.mat.Rows)
-		for i := 0; i < m.mat.Cols; i++ {
+		col := make([]float64, m.Mat.Rows)
+		for i := 0; i < m.Mat.Cols; i++ {
 			var s float64
 			for _, e := range m.Col(col, i) {
 				s += math.Abs(e)
@@ -70,8 +70,8 @@ func (m *Dense) Norm(ord float64) float64 {
 			n = math.Max(s, n)
 		}
 	case math.IsInf(ord, +1):
-		row := make([]float64, m.mat.Cols)
-		for i := 0; i < m.mat.Rows; i++ {
+		row := make([]float64, m.Mat.Cols)
+		for i := 0; i < m.Mat.Rows; i++ {
 			var s float64
 			for _, e := range m.Row(row, i) {
 				s += math.Abs(e)
@@ -80,8 +80,8 @@ func (m *Dense) Norm(ord float64) float64 {
 		}
 	case ord == -1:
 		n = math.MaxFloat64
-		col := make([]float64, m.mat.Rows)
-		for i := 0; i < m.mat.Cols; i++ {
+		col := make([]float64, m.Mat.Rows)
+		for i := 0; i < m.Mat.Cols; i++ {
 			var s float64
 			for _, e := range m.Col(col, i) {
 				s += math.Abs(e)
@@ -90,8 +90,8 @@ func (m *Dense) Norm(ord float64) float64 {
 		}
 	case math.IsInf(ord, -1):
 		n = math.MaxFloat64
-		row := make([]float64, m.mat.Cols)
-		for i := 0; i < m.mat.Rows; i++ {
+		row := make([]float64, m.Mat.Cols)
+		for i := 0; i < m.Mat.Rows; i++ {
 			var s float64
 			for _, e := range m.Row(row, i) {
 				s += math.Abs(e)
@@ -99,8 +99,8 @@ func (m *Dense) Norm(ord float64) float64 {
 			n = math.Min(s, n)
 		}
 	case ord == 0:
-		for i := 0; i < len(m.mat.Data); i += m.mat.Stride {
-			for _, v := range m.mat.Data[i : i+m.mat.Cols] {
+		for i := 0; i < len(m.Mat.Data); i += m.Mat.Stride {
+			for _, v := range m.Mat.Data[i : i+m.Mat.Cols] {
 				n = math.Hypot(n, v)
 			}
 		}
@@ -134,9 +134,9 @@ func (m *Dense) Add(a, b Matrix) {
 	if a, ok := a.(RawMatrixer); ok {
 		if b, ok := b.(RawMatrixer); ok {
 			amat, bmat := a.RawMatrix(), b.RawMatrix()
-			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.mat.Stride {
+			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.Mat.Stride {
 				for i, v := range amat.Data[ja : ja+ac] {
-					m.mat.Data[i+jm] = v + bmat.Data[i+jb]
+					m.Mat.Data[i+jm] = v + bmat.Data[i+jb]
 				}
 			}
 			return
@@ -181,9 +181,9 @@ func (m *Dense) Sub(a, b Matrix) {
 	if a, ok := a.(RawMatrixer); ok {
 		if b, ok := b.(RawMatrixer); ok {
 			amat, bmat := a.RawMatrix(), b.RawMatrix()
-			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.mat.Stride {
+			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.Mat.Stride {
 				for i, v := range amat.Data[ja : ja+ac] {
-					m.mat.Data[i+jm] = v - bmat.Data[i+jb]
+					m.Mat.Data[i+jm] = v - bmat.Data[i+jb]
 				}
 			}
 			return
@@ -229,9 +229,9 @@ func (m *Dense) MulElem(a, b Matrix) {
 	if a, ok := a.(RawMatrixer); ok {
 		if b, ok := b.(RawMatrixer); ok {
 			amat, bmat := a.RawMatrix(), b.RawMatrix()
-			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.mat.Stride {
+			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.Mat.Stride {
 				for i, v := range amat.Data[ja : ja+ac] {
-					m.mat.Data[i+jm] = v * bmat.Data[i+jb]
+					m.Mat.Data[i+jm] = v * bmat.Data[i+jb]
 				}
 			}
 			return
@@ -277,9 +277,9 @@ func (m *Dense) DivElem(a, b Matrix) {
 	if a, ok := a.(RawMatrixer); ok {
 		if b, ok := b.(RawMatrixer); ok {
 			amat, bmat := a.RawMatrix(), b.RawMatrix()
-			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.mat.Stride {
+			for ja, jb, jm := 0, 0, 0; ja < ar*amat.Stride; ja, jb, jm = ja+amat.Stride, jb+bmat.Stride, jm+m.Mat.Stride {
 				for i, v := range amat.Data[ja : ja+ac] {
-					m.mat.Data[i+jm] = v / bmat.Data[i+jb]
+					m.Mat.Data[i+jm] = v / bmat.Data[i+jb]
 				}
 			}
 			return
@@ -324,8 +324,8 @@ func (m *Dense) Dot(b Matrix) float64 {
 
 	if b, ok := b.(RawMatrixer); ok {
 		bmat := b.RawMatrix()
-		for jm, jb := 0, 0; jm < mr*m.mat.Stride; jm, jb = jm+m.mat.Stride, jb+bmat.Stride {
-			for i, v := range m.mat.Data[jm : jm+mc] {
+		for jm, jb := 0, 0; jm < mr*m.Mat.Stride; jm, jb = jm+m.Mat.Stride, jb+bmat.Stride {
+			for i, v := range m.Mat.Data[jm : jm+mc] {
 				d += v * bmat.Data[i+jb]
 			}
 		}
@@ -336,7 +336,7 @@ func (m *Dense) Dot(b Matrix) float64 {
 		row := make([]float64, bc)
 		for r := 0; r < br; r++ {
 			for i, v := range b.Row(row, r) {
-				d += m.mat.Data[r*m.mat.Stride+i] * v
+				d += m.Mat.Data[r*m.Mat.Stride+i] * v
 			}
 		}
 		return d
@@ -376,7 +376,7 @@ func (m *Dense) Mul(a, b Matrix) {
 	if a, ok := a.(RawMatrixer); ok {
 		if b, ok := b.(RawMatrixer); ok {
 			amat, bmat := a.RawMatrix(), b.RawMatrix()
-			blas64.Gemm(blas.NoTrans, blas.NoTrans, 1, amat, bmat, 0, w.mat)
+			blas64.Gemm(blas.NoTrans, blas.NoTrans, 1, amat, bmat, 0, w.Mat)
 			return
 		}
 	}
@@ -386,7 +386,7 @@ func (m *Dense) Mul(a, b Matrix) {
 			row := make([]float64, ac)
 			col := make([]float64, br)
 			for r := 0; r < ar; r++ {
-				dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+				dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 				for c := 0; c < bc; c++ {
 					dataTmp[c] = blas64.Dot(ac,
 						blas64.Vector{Inc: 1, Data: a.Row(row, r)},
@@ -408,7 +408,7 @@ func (m *Dense) Mul(a, b Matrix) {
 			for i, e := range row {
 				v += e * b.At(i, c)
 			}
-			w.mat.Data[r*w.mat.Stride+c] = v
+			w.Mat.Data[r*w.Mat.Stride+c] = v
 		}
 	}
 }
@@ -454,12 +454,12 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 				} else {
 					op = blas.NoTrans
 				}
-				blas64.Syrk(op, 1, amat, 0, blas64.Symmetric{N: w.mat.Rows, Stride: w.mat.Stride, Data: w.mat.Data, Uplo: blas.Upper})
+				blas64.Syrk(op, 1, amat, 0, blas64.Symmetric{N: w.Mat.Rows, Stride: w.Mat.Stride, Data: w.Mat.Data, Uplo: blas.Upper})
 
 				// Fill lower matrix with result.
 				// TODO(kortschak): Investigate whether using blas64.Copy improves the performance of this significantly.
-				for i := 0; i < w.mat.Rows; i++ {
-					for j := i + 1; j < w.mat.Cols; j++ {
+				for i := 0; i < w.Mat.Rows; i++ {
+					for j := i + 1; j < w.Mat.Cols; j++ {
 						w.set(j, i, w.at(i, j))
 					}
 				}
@@ -476,7 +476,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 					bOp = blas.NoTrans
 				}
 				bmat := b.RawMatrix()
-				blas64.Gemm(aOp, bOp, 1, amat, bmat, 0, w.mat)
+				blas64.Gemm(aOp, bOp, 1, amat, bmat, 0, w.Mat)
 			}
 			return
 		}
@@ -489,7 +489,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 			if aTrans {
 				if bTrans {
 					for r := 0; r < ar; r++ {
-						dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+						dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 						for c := 0; c < bc; c++ {
 							dataTmp[c] = blas64.Dot(ac,
 								blas64.Vector{Inc: 1, Data: a.Col(row, r)},
@@ -501,7 +501,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 				}
 				// TODO(jonlawlor): determine if (b*a)' is more efficient
 				for r := 0; r < ar; r++ {
-					dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+					dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 					for c := 0; c < bc; c++ {
 						dataTmp[c] = blas64.Dot(ac,
 							blas64.Vector{Inc: 1, Data: a.Col(row, r)},
@@ -513,7 +513,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 			}
 			if bTrans {
 				for r := 0; r < ar; r++ {
-					dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+					dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 					for c := 0; c < bc; c++ {
 						dataTmp[c] = blas64.Dot(ac,
 							blas64.Vector{Inc: 1, Data: a.Row(row, r)},
@@ -524,7 +524,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 				return
 			}
 			for r := 0; r < ar; r++ {
-				dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+				dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 				for c := 0; c < bc; c++ {
 					dataTmp[c] = blas64.Dot(ac,
 						blas64.Vector{Inc: 1, Data: a.Row(row, r)},
@@ -540,7 +540,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 	if aTrans {
 		if bTrans {
 			for r := 0; r < ar; r++ {
-				dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+				dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 				for i := range row {
 					row[i] = a.At(i, r)
 				}
@@ -556,7 +556,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 		}
 
 		for r := 0; r < ar; r++ {
-			dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+			dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 			for i := range row {
 				row[i] = a.At(i, r)
 			}
@@ -572,7 +572,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 	}
 	if bTrans {
 		for r := 0; r < ar; r++ {
-			dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+			dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 			for i := range row {
 				row[i] = a.At(r, i)
 			}
@@ -587,7 +587,7 @@ func (m *Dense) MulTrans(a Matrix, aTrans bool, b Matrix, bTrans bool) {
 		return
 	}
 	for r := 0; r < ar; r++ {
-		dataTmp := w.mat.Data[r*w.mat.Stride : r*w.mat.Stride+bc]
+		dataTmp := w.Mat.Data[r*w.Mat.Stride : r*w.Mat.Stride+bc]
 		for i := range row {
 			row[i] = a.At(r, i)
 		}
@@ -617,22 +617,22 @@ func (m *Dense) Exp(a Matrix) {
 	var w *Dense
 	switch {
 	case m.isZero():
-		m.mat = blas64.General{
+		m.Mat = blas64.General{
 			Rows:   r,
 			Cols:   c,
 			Stride: c,
-			Data:   useZeroed(m.mat.Data, r*r),
+			Data:   useZeroed(m.Mat.Data, r*r),
 		}
 		m.capRows = r
 		m.capCols = c
 		for i := 0; i < r*r; i += r + 1 {
-			m.mat.Data[i] = 1
+			m.Mat.Data[i] = 1
 		}
 		w = m
-	case r == m.mat.Rows && c == m.mat.Cols:
+	case r == m.Mat.Rows && c == m.Mat.Cols:
 		w = getWorkspace(r, r, true)
 		for i := 0; i < r; i++ {
-			w.mat.Data[i*w.mat.Stride+i] = 1
+			w.Mat.Data[i*w.Mat.Stride+i] = 1
 		}
 	default:
 		panic(ErrShape)
@@ -658,8 +658,8 @@ func (m *Dense) Exp(a Matrix) {
 		// This is OK to do because power and tmp are
 		// new Dense values so all rows are contiguous.
 		// TODO(kortschak) Make this explicit in the NewDense doc comment.
-		for j, v := range power.mat.Data {
-			tmp.mat.Data[j] = v / factI
+		for j, v := range power.Mat.Data {
+			tmp.Mat.Data[j] = v / factI
 		}
 
 		w.Add(w, tmp)
@@ -701,8 +701,8 @@ func (m *Dense) Pow(a Matrix, n int) {
 	switch n {
 	case 0:
 		for i := 0; i < r; i++ {
-			zero(m.mat.Data[i*m.mat.Stride : i*m.mat.Stride+c])
-			m.mat.Data[i*m.mat.Stride+i] = 1
+			zero(m.Mat.Data[i*m.Mat.Stride : i*m.Mat.Stride+c])
+			m.Mat.Data[i*m.Mat.Stride+i] = 1
 		}
 		return
 	case 1:
@@ -745,9 +745,9 @@ func (m *Dense) Scale(f float64, a Matrix) {
 
 	if a, ok := a.(RawMatrixer); ok {
 		amat := a.RawMatrix()
-		for ja, jm := 0, 0; ja < ar*amat.Stride; ja, jm = ja+amat.Stride, jm+m.mat.Stride {
+		for ja, jm := 0, 0; ja < ar*amat.Stride; ja, jm = ja+amat.Stride, jm+m.Mat.Stride {
 			for i, v := range amat.Data[ja : ja+ac] {
-				m.mat.Data[i+jm] = v * f
+				m.Mat.Data[i+jm] = v * f
 			}
 		}
 		return
@@ -782,9 +782,9 @@ func (m *Dense) Apply(f ApplyFunc, a Matrix) {
 
 	if a, ok := a.(RawMatrixer); ok {
 		amat := a.RawMatrix()
-		for j, ja, jm := 0, 0, 0; ja < ar*amat.Stride; j, ja, jm = j+1, ja+amat.Stride, jm+m.mat.Stride {
+		for j, ja, jm := 0, 0, 0; ja < ar*amat.Stride; j, ja, jm = j+1, ja+amat.Stride, jm+m.Mat.Stride {
 			for i, v := range amat.Data[ja : ja+ac] {
-				m.mat.Data[i+jm] = f(j, i, v)
+				m.Mat.Data[i+jm] = f(j, i, v)
 			}
 		}
 		return
@@ -812,10 +812,10 @@ func (m *Dense) Apply(f ApplyFunc, a Matrix) {
 //
 // See the Sumer interface for more information.
 func (m *Dense) Sum() float64 {
-	l := m.mat.Cols
+	l := m.Mat.Cols
 	var s float64
-	for i := 0; i < len(m.mat.Data); i += m.mat.Stride {
-		for _, v := range m.mat.Data[i : i+l] {
+	for i := 0; i < len(m.Mat.Data); i += m.Mat.Stride {
+		for _, v := range m.Mat.Data[i : i+l] {
 			s += v
 		}
 	}
@@ -828,14 +828,14 @@ func (m *Dense) Sum() float64 {
 // See the Equaler interface for more information.
 func (m *Dense) Equals(b Matrix) bool {
 	br, bc := b.Dims()
-	if br != m.mat.Rows || bc != m.mat.Cols {
+	if br != m.Mat.Rows || bc != m.Mat.Cols {
 		return false
 	}
 
 	if b, ok := b.(RawMatrixer); ok {
 		bmat := b.RawMatrix()
-		for jb, jm := 0, 0; jm < br*m.mat.Stride; jb, jm = jb+bmat.Stride, jm+m.mat.Stride {
-			for i, v := range m.mat.Data[jm : jm+bc] {
+		for jb, jm := 0, 0; jm < br*m.Mat.Stride; jb, jm = jb+bmat.Stride, jm+m.Mat.Stride {
+			for i, v := range m.Mat.Data[jm : jm+bc] {
 				if v != bmat.Data[i+jb] {
 					return false
 				}
@@ -847,7 +847,7 @@ func (m *Dense) Equals(b Matrix) bool {
 	if b, ok := b.(Vectorer); ok {
 		rowb := make([]float64, bc)
 		for r := 0; r < br; r++ {
-			rowm := m.mat.Data[r*m.mat.Stride : r*m.mat.Stride+m.mat.Cols]
+			rowm := m.Mat.Data[r*m.Mat.Stride : r*m.Mat.Stride+m.Mat.Cols]
 			for i, v := range b.Row(rowb, r) {
 				if rowm[i] != v {
 					return false
@@ -873,14 +873,14 @@ func (m *Dense) Equals(b Matrix) bool {
 // See the ApproxEqualer interface for more information.
 func (m *Dense) EqualsApprox(b Matrix, epsilon float64) bool {
 	br, bc := b.Dims()
-	if br != m.mat.Rows || bc != m.mat.Cols {
+	if br != m.Mat.Rows || bc != m.Mat.Cols {
 		return false
 	}
 
 	if b, ok := b.(RawMatrixer); ok {
 		bmat := b.RawMatrix()
-		for jb, jm := 0, 0; jm < br*m.mat.Stride; jb, jm = jb+bmat.Stride, jm+m.mat.Stride {
-			for i, v := range m.mat.Data[jm : jm+bc] {
+		for jb, jm := 0, 0; jm < br*m.Mat.Stride; jb, jm = jb+bmat.Stride, jm+m.Mat.Stride {
+			for i, v := range m.Mat.Data[jm : jm+bc] {
 				if math.Abs(v-bmat.Data[i+jb]) > epsilon {
 					return false
 				}
@@ -892,7 +892,7 @@ func (m *Dense) EqualsApprox(b Matrix, epsilon float64) bool {
 	if b, ok := b.(Vectorer); ok {
 		rowb := make([]float64, bc)
 		for r := 0; r < br; r++ {
-			rowm := m.mat.Data[r*m.mat.Stride : r*m.mat.Stride+m.mat.Cols]
+			rowm := m.Mat.Data[r*m.Mat.Stride : r*m.Mat.Stride+m.Mat.Cols]
 			for i, v := range b.Row(rowb, r) {
 				if math.Abs(rowm[i]-v) > epsilon {
 					return false
@@ -934,7 +934,7 @@ func (m *Dense) RankOne(a Matrix, alpha float64, x, y *Vector) {
 	if m != a {
 		w.Copy(a)
 	}
-	blas64.Ger(alpha, x.mat, y.mat, w.mat)
+	blas64.Ger(alpha, x.Mat, y.Mat, w.Mat)
 	*m = w
 }
 
@@ -950,26 +950,26 @@ func (m *Dense) Outer(x, y *Vector) {
 	// the shape checks.
 	// TODO(kortschak): Factor out into reuseZeroedAs if
 	// we find another case that needs it.
-	if m.mat.Rows > m.capRows || m.mat.Cols > m.capCols {
+	if m.Mat.Rows > m.capRows || m.Mat.Cols > m.capCols {
 		// Panic as a string, not a mat64.Error.
 		panic("mat64: caps not correctly set")
 	}
 	if m.isZero() {
-		m.mat = blas64.General{
+		m.Mat = blas64.General{
 			Rows:   r,
 			Cols:   c,
 			Stride: c,
-			Data:   useZeroed(m.mat.Data, r*c),
+			Data:   useZeroed(m.Mat.Data, r*c),
 		}
 		m.capRows = r
 		m.capCols = c
-	} else if r != m.mat.Rows || c != m.mat.Cols {
+	} else if r != m.Mat.Rows || c != m.Mat.Cols {
 		panic(ErrShape)
 	} else {
 		for i := 0; i < r; i++ {
-			zero(m.mat.Data[i*m.mat.Stride : i*m.mat.Stride+c])
+			zero(m.Mat.Data[i*m.Mat.Stride : i*m.Mat.Stride+c])
 		}
 	}
 
-	blas64.Ger(1, x.mat, y.mat, m.mat)
+	blas64.Ger(1, x.Mat, y.Mat, m.Mat)
 }

@@ -126,7 +126,7 @@ func (s *S) TestInnerSym(c *check.C) {
 func makeVectorInc(inc int, f []float64) *Vector {
 	v := &Vector{
 		n: len(f),
-		mat: blas64.Vector{
+		Mat: blas64.Vector{
 			Inc:  inc,
 			Data: make([]float64, (len(f)-1)*inc+1),
 		},
@@ -134,25 +134,25 @@ func makeVectorInc(inc int, f []float64) *Vector {
 
 	// Contaminate backing data in all positions...
 	const base = 100
-	for i := range v.mat.Data {
-		v.mat.Data[i] = float64(i + base)
+	for i := range v.Mat.Data {
+		v.Mat.Data[i] = float64(i + base)
 	}
 
 	// then write real elements.
 	for i := range f {
-		v.mat.Data[i*inc] = f[i]
+		v.Mat.Data[i*inc] = f[i]
 	}
 	return v
 }
 
 func benchmarkInner(b *testing.B, m, n int) {
 	x := NewVector(m, nil)
-	randomSlice(x.mat.Data)
+	randomSlice(x.Mat.Data)
 	y := NewVector(n, nil)
-	randomSlice(y.mat.Data)
+	randomSlice(y.Mat.Data)
 	data := make([]float64, m*n)
 	randomSlice(data)
-	mat := &Dense{mat: blas64.General{Rows: m, Cols: n, Stride: n, Data: data}, capRows: m, capCols: n}
+	mat := &Dense{Mat: blas64.General{Rows: m, Cols: n, Stride: n, Data: data}, capRows: m, capCols: n}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		Inner(x, mat, y)

@@ -111,7 +111,7 @@ func TestMul(t *testing.T) {
 
 		// Get correct matrix multiply answer from blas64.Gemm
 		blas64.Gemm(blas.NoTrans, blas.NoTrans,
-			1, a.mat, b.mat,
+			1, a.Mat, b.Mat,
 			0, blas64.General{Rows: ar, Cols: bc, Stride: bc, Data: cvec},
 		)
 
@@ -254,7 +254,7 @@ func denseEqual(a *Dense, acomp matComp) bool {
 	if ac2 != acomp.c {
 		return false
 	}
-	if !floats.Equal(a.mat.Data, acomp.data) {
+	if !floats.Equal(a.Mat.Data, acomp.data) {
 		return false
 	}
 	return true
@@ -268,7 +268,7 @@ func denseEqualApprox(a *Dense, acomp matComp, tol float64) bool {
 	if ac2 != acomp.c {
 		return false
 	}
-	if !floats.EqualApprox(a.mat.Data, acomp.data, tol) {
+	if !floats.EqualApprox(a.Mat.Data, acomp.data, tol) {
 		return false
 	}
 	return true

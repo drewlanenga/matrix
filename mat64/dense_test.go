@@ -11,6 +11,7 @@ import (
 
 	"github.com/gonum/blas/blas64"
 	"github.com/gonum/floats"
+
 	"gopkg.in/check.v1"
 )
 
@@ -30,7 +31,7 @@ func (s *S) TestNewDense(c *check.C) {
 		rows, cols int
 		min, max   float64
 		fro        float64
-		mat        *Dense
+		Mat        *Dense
 	}{
 		{
 			[]float64{
@@ -42,7 +43,7 @@ func (s *S) TestNewDense(c *check.C) {
 			0, 0,
 			0,
 			&Dense{
-				mat: blas64.General{
+				Mat: blas64.General{
 					Rows: 3, Cols: 3,
 					Stride: 3,
 					Data:   []float64{0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -60,7 +61,7 @@ func (s *S) TestNewDense(c *check.C) {
 			1, 1,
 			3,
 			&Dense{
-				mat: blas64.General{
+				Mat: blas64.General{
 					Rows: 3, Cols: 3,
 					Stride: 3,
 					Data:   []float64{1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -78,7 +79,7 @@ func (s *S) TestNewDense(c *check.C) {
 			0, 1,
 			1.7320508075688772,
 			&Dense{
-				mat: blas64.General{
+				Mat: blas64.General{
 					Rows: 3, Cols: 3,
 					Stride: 3,
 					Data:   []float64{1, 0, 0, 0, 1, 0, 0, 0, 1},
@@ -96,7 +97,7 @@ func (s *S) TestNewDense(c *check.C) {
 			-1, 0,
 			1.7320508075688772,
 			&Dense{
-				mat: blas64.General{
+				Mat: blas64.General{
 					Rows: 3, Cols: 3,
 					Stride: 3,
 					Data:   []float64{-1, 0, 0, 0, -1, 0, 0, 0, -1},
@@ -113,7 +114,7 @@ func (s *S) TestNewDense(c *check.C) {
 			1, 6,
 			9.539392014169458,
 			&Dense{
-				mat: blas64.General{
+				Mat: blas64.General{
 					Rows: 2, Cols: 3,
 					Stride: 3,
 					Data:   []float64{1, 2, 3, 4, 5, 6},
@@ -131,7 +132,7 @@ func (s *S) TestNewDense(c *check.C) {
 			1, 6,
 			9.539392014169458,
 			&Dense{
-				mat: blas64.General{
+				Mat: blas64.General{
 					Rows: 3, Cols: 2,
 					Stride: 2,
 					Data:   []float64{1, 2, 3, 4, 5, 6},
@@ -147,8 +148,8 @@ func (s *S) TestNewDense(c *check.C) {
 		c.Check(m.Min(), check.Equals, test.min, check.Commentf("Test %d", i))
 		c.Check(m.Max(), check.Equals, test.max, check.Commentf("Test %d", i))
 		c.Check(m.Norm(0), check.Equals, test.fro, check.Commentf("Test %d", i))
-		c.Check(m, check.DeepEquals, test.mat, check.Commentf("Test %d", i))
-		c.Check(m.Equals(test.mat), check.Equals, true, check.Commentf("Test %d", i))
+		c.Check(m, check.DeepEquals, test.Mat, check.Commentf("Test %d", i))
+		c.Check(m.Equals(test.Mat), check.Equals, true, check.Commentf("Test %d", i))
 	}
 }
 
@@ -198,9 +199,9 @@ func (s *S) TestRowCol(c *check.C) {
 			c.Check(a.Row(nil, ri), check.DeepEquals, row, check.Commentf("Test %d", i))
 		}
 		for ci := range af[0] {
-			col := make([]float64, a.mat.Rows)
+			col := make([]float64, a.Mat.Rows)
 			for j := range col {
-				col[j] = float64(ci + 1 + j*a.mat.Cols)
+				col[j] = float64(ci + 1 + j*a.Mat.Cols)
 			}
 			c.Check(a.Col(nil, ci), check.DeepEquals, col, check.Commentf("Test %d", i))
 		}
@@ -217,7 +218,7 @@ func (s *S) TestSetRowColumn(c *check.C) {
 			a := NewDense(flatten(as))
 			t := &Dense{}
 			t.Clone(a)
-			a.SetRow(ri, make([]float64, a.mat.Cols))
+			a.SetRow(ri, make([]float64, a.Mat.Cols))
 			t.Sub(t, a)
 			c.Check(t.Norm(0), check.Equals, floats.Norm(row, 2))
 		}
@@ -226,10 +227,10 @@ func (s *S) TestSetRowColumn(c *check.C) {
 			a := NewDense(flatten(as))
 			t := &Dense{}
 			t.Clone(a)
-			a.SetCol(ci, make([]float64, a.mat.Rows))
-			col := make([]float64, a.mat.Rows)
+			a.SetCol(ci, make([]float64, a.Mat.Rows))
+			col := make([]float64, a.Mat.Rows)
 			for j := range col {
-				col[j] = float64(ci + 1 + j*a.mat.Cols)
+				col[j] = float64(ci + 1 + j*a.Mat.Cols)
 			}
 			t.Sub(t, a)
 			c.Check(t.Norm(0), check.Equals, floats.Norm(col, 2))
@@ -239,10 +240,10 @@ func (s *S) TestSetRowColumn(c *check.C) {
 
 func (s *S) TestRowColView(c *check.C) {
 	for _, test := range []struct {
-		mat [][]float64
+		Mat [][]float64
 	}{
 		{
-			mat: [][]float64{
+			Mat: [][]float64{
 				{1, 2, 3, 4, 5},
 				{6, 7, 8, 9, 10},
 				{11, 12, 13, 14, 15},
@@ -251,7 +252,7 @@ func (s *S) TestRowColView(c *check.C) {
 			},
 		},
 		{
-			mat: [][]float64{
+			Mat: [][]float64{
 				{1, 2, 3, 4},
 				{6, 7, 8, 9},
 				{11, 12, 13, 14},
@@ -260,7 +261,7 @@ func (s *S) TestRowColView(c *check.C) {
 			},
 		},
 		{
-			mat: [][]float64{
+			Mat: [][]float64{
 				{1, 2, 3, 4, 5},
 				{6, 7, 8, 9, 10},
 				{11, 12, 13, 14, 15},
@@ -272,7 +273,7 @@ func (s *S) TestRowColView(c *check.C) {
 		// slice is to ensure that changes to flatten in the future
 		// do not mask a regression to the issue identified in
 		// gonum/matrix#110.
-		rows, cols, flat := flatten(test.mat)
+		rows, cols, flat := flatten(test.Mat)
 		m := NewDense(rows, cols, flat[:len(flat):len(flat)])
 
 		c.Check(func() { m.RowView(-1) }, check.PanicMatches, ErrRowAccess.Error())
@@ -284,14 +285,14 @@ func (s *S) TestRowColView(c *check.C) {
 			vr := m.RowView(i)
 			c.Check(vr.Len(), check.Equals, cols)
 			for j := 0; j < cols; j++ {
-				c.Check(vr.At(j, 0), check.Equals, test.mat[i][j])
+				c.Check(vr.At(j, 0), check.Equals, test.Mat[i][j])
 			}
 		}
 		for j := 0; j < cols; j++ {
 			vr := m.ColView(j)
 			c.Check(vr.Len(), check.Equals, rows)
 			for i := 0; i < rows; i++ {
-				c.Check(vr.At(i, 0), check.Equals, test.mat[i][j])
+				c.Check(vr.At(i, 0), check.Equals, test.Mat[i][j])
 			}
 		}
 		m = m.View(1, 1, rows-2, cols-2).(*Dense)
@@ -299,14 +300,14 @@ func (s *S) TestRowColView(c *check.C) {
 			vr := m.RowView(i - 1)
 			c.Check(vr.Len(), check.Equals, cols-2)
 			for j := 1; j < cols-1; j++ {
-				c.Check(vr.At(j-1, 0), check.Equals, test.mat[i][j])
+				c.Check(vr.At(j-1, 0), check.Equals, test.Mat[i][j])
 			}
 		}
 		for j := 1; j < cols-1; j++ {
 			vr := m.ColView(j - 1)
 			c.Check(vr.Len(), check.Equals, rows-2)
 			for i := 1; i < rows-1; i++ {
-				c.Check(vr.At(i-1, 0), check.Equals, test.mat[i][j])
+				c.Check(vr.At(i-1, 0), check.Equals, test.Mat[i][j])
 			}
 		}
 	}
@@ -337,11 +338,11 @@ func (s *S) TestGrow(c *check.C) {
 
 	// Test grow uses existing data slice when matrix is zero size.
 	v.Reset()
-	p, l := &v.mat.Data[:1][0], cap(v.mat.Data)
+	p, l := &v.Mat.Data[:1][0], cap(v.Mat.Data)
 	*p = 1
 	v = v.Grow(5, 5).(*Dense)
-	c.Check(&v.mat.Data[:1][0], check.Equals, p)
-	c.Check(cap(v.mat.Data), check.Equals, l)
+	c.Check(&v.Mat.Data[:1][0], check.Equals, p)
+	c.Check(cap(v.Mat.Data), check.Equals, l)
 	c.Check(v.At(0, 0), check.Equals, 0.)
 }
 
@@ -382,20 +383,20 @@ func (s *S) TestAdd(c *check.C) {
 		var temp Dense
 		temp.Add(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Add %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
-		zero(temp.mat.Data)
+		zero(temp.Mat.Data)
 		temp.Add(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Add %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
 		// These probably warrant a better check and failure. They should never happen in the wild though.
-		temp.mat.Data = nil
+		temp.Mat.Data = nil
 		c.Check(func() { temp.Add(a, b) }, check.PanicMatches, "runtime error: index out of range", check.Commentf("Test %d", i))
 
 		a.Add(a, b)
 		c.Check(a.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Add %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(a.mat.Rows, a.mat.Cols, a.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(a.Mat.Rows, a.Mat.Cols, a.Mat.Data)))
 	}
 }
 
@@ -436,20 +437,20 @@ func (s *S) TestSub(c *check.C) {
 		var temp Dense
 		temp.Sub(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Sub %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
-		zero(temp.mat.Data)
+		zero(temp.Mat.Data)
 		temp.Sub(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Sub %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
 		// These probably warrant a better check and failure. They should never happen in the wild though.
-		temp.mat.Data = nil
+		temp.Mat.Data = nil
 		c.Check(func() { temp.Sub(a, b) }, check.PanicMatches, "runtime error: index out of range", check.Commentf("Test %d", i))
 
 		a.Sub(a, b)
 		c.Check(a.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Sub %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(a.mat.Rows, a.mat.Cols, a.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(a.Mat.Rows, a.Mat.Cols, a.Mat.Data)))
 	}
 }
 
@@ -490,27 +491,27 @@ func (s *S) TestMulElem(c *check.C) {
 		var temp Dense
 		temp.MulElem(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v MulElem %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
-		zero(temp.mat.Data)
+		zero(temp.Mat.Data)
 		temp.MulElem(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v MulElem %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
 		// These probably warrant a better check and failure. They should never happen in the wild though.
-		temp.mat.Data = nil
+		temp.Mat.Data = nil
 		c.Check(func() { temp.MulElem(a, b) }, check.PanicMatches, "runtime error: index out of range", check.Commentf("Test %d", i))
 
 		a.MulElem(a, b)
 		c.Check(a.Equals(r), check.Equals, true, check.Commentf("Test %d: %v MulElem %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(a.mat.Rows, a.mat.Cols, a.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(a.Mat.Rows, a.Mat.Cols, a.Mat.Data)))
 	}
 }
 
 // A comparison that treats NaNs as equal, for testing.
 func (m *Dense) same(b Matrix) bool {
 	br, bc := b.Dims()
-	if br != m.mat.Rows || bc != m.mat.Cols {
+	if br != m.Mat.Rows || bc != m.Mat.Cols {
 		return false
 	}
 	for r := 0; r < br; r++ {
@@ -560,20 +561,20 @@ func (s *S) TestDivElem(c *check.C) {
 		var temp Dense
 		temp.DivElem(a, b)
 		c.Check(temp.same(r), check.Equals, true, check.Commentf("Test %d: %v DivElem %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
-		zero(temp.mat.Data)
+		zero(temp.Mat.Data)
 		temp.DivElem(a, b)
 		c.Check(temp.same(r), check.Equals, true, check.Commentf("Test %d: %v DivElem %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
 		// These probably warrant a better check and failure. They should never happen in the wild though.
-		temp.mat.Data = nil
+		temp.Mat.Data = nil
 		c.Check(func() { temp.DivElem(a, b) }, check.PanicMatches, "runtime error: index out of range", check.Commentf("Test %d", i))
 
 		a.DivElem(a, b)
 		c.Check(a.same(r), check.Equals, true, check.Commentf("Test %d: %v DivElem %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(a.mat.Rows, a.mat.Cols, a.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(a.Mat.Rows, a.Mat.Cols, a.Mat.Data)))
 	}
 }
 
@@ -619,15 +620,15 @@ func (s *S) TestMul(c *check.C) {
 		var temp Dense
 		temp.Mul(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Mul %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(temp.mat.Rows, temp.mat.Cols, temp.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(temp.Mat.Rows, temp.Mat.Cols, temp.Mat.Data)))
 
-		zero(temp.mat.Data)
+		zero(temp.Mat.Data)
 		temp.Mul(a, b)
 		c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v Mul %v expect %v got %v",
-			i, test.a, test.b, test.r, unflatten(a.mat.Rows, a.mat.Cols, a.mat.Data)))
+			i, test.a, test.b, test.r, unflatten(a.Mat.Rows, a.Mat.Cols, a.Mat.Data)))
 
 		// These probably warrant a better check and failure. They should never happen in the wild though.
-		temp.mat.Data = nil
+		temp.Mat.Data = nil
 		c.Check(func() { temp.Mul(a, b) }, check.PanicMatches, "blas: index of c out of range", check.Commentf("Test %d", i))
 	}
 }
@@ -695,7 +696,7 @@ func (s *S) TestMulTrans(c *check.C) {
 					c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v trans=%b MulTrans %v trans=%b expect %v got %v",
 						i, test.a, aTrans, test.b, bTrans, r, temp))
 
-					zero(temp.mat.Data)
+					zero(temp.Mat.Data)
 					temp.MulTrans(a, aTrans, b, bTrans)
 					c.Check(temp.Equals(r), check.Equals, true, check.Commentf("Test %d: %v trans=%b MulTrans %v trans=%b expect %v got %v",
 						i, test.a, aTrans, test.b, bTrans, r, temp))
@@ -748,7 +749,7 @@ func (s *S) TestMulTransSelf(c *check.C) {
 			temp.MulTrans(a, trans, a, !trans)
 			c.Check(temp.Equals(&r), check.Equals, true, check.Commentf("Test %d: %v MulTrans self trans=%b expect %v got %v", i, test.a, trans, r, temp))
 
-			zero(temp.mat.Data)
+			zero(temp.Mat.Data)
 			temp.MulTrans(a, trans, a, !trans)
 			c.Check(temp.Equals(&r), check.Equals, true, check.Commentf("Test %d: %v MulTrans self trans=%b expect %v got %v", i, test.a, trans, r, temp))
 		}
@@ -760,7 +761,7 @@ func randDense(size int, rho float64, rnd func() float64) (*Dense, error) {
 		return nil, ErrZeroLength
 	}
 	d := &Dense{
-		mat: blas64.General{
+		Mat: blas64.General{
 			Rows: size, Cols: size, Stride: size,
 			Data: make([]float64, size*size),
 		},
@@ -1034,11 +1035,11 @@ func (s *S) TestTranspose(c *check.C) {
 		rr.TCopy(&r)
 		c.Check(rr.Equals(a), check.Equals, true, check.Commentf("Test %d: %v transpose = I", i, test.a, test.t))
 
-		zero(r.mat.Data)
+		zero(r.Mat.Data)
 		r.TCopy(a)
 		c.Check(r.Equals(t), check.Equals, true, check.Commentf("Test %d: %v transpose = %v", i, test.a, test.t))
 
-		zero(rr.mat.Data)
+		zero(rr.Mat.Data)
 		rr.TCopy(&r)
 		c.Check(rr.Equals(a), check.Equals, true, check.Commentf("Test %d: %v transpose = I", i, test.a, test.t))
 	}
@@ -1175,10 +1176,10 @@ func (s *S) TestApply(c *check.C) {
 		var r Dense
 
 		r.Apply(test.fn, a)
-		c.Check(r.Equals(t), check.Equals, true, check.Commentf("Test %d: obtained %v expect: %v", i, r.mat.Data, t.mat.Data))
+		c.Check(r.Equals(t), check.Equals, true, check.Commentf("Test %d: obtained %v expect: %v", i, r.Mat.Data, t.Mat.Data))
 
 		a.Apply(test.fn, a)
-		c.Check(a.Equals(t), check.Equals, true, check.Commentf("Test %d: obtained %v expect: %v", i, a.mat.Data, t.mat.Data))
+		c.Check(a.Equals(t), check.Equals, true, check.Commentf("Test %d: obtained %v expect: %v", i, a.Mat.Data, t.Mat.Data))
 	}
 }
 

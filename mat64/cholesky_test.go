@@ -238,7 +238,7 @@ func benchmarkCholesky(b *testing.B, n int) {
 	}
 	bm := NewDense(n, n, base)
 	bm.MulTrans(bm, true, bm, false)
-	am := NewSymDense(n, bm.mat.Data)
+	am := NewSymDense(n, bm.Mat.Data)
 
 	t := NewTriDense(n, true, nil)
 	b.ResetTimer()

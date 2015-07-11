@@ -47,7 +47,7 @@ func init() {
 	for i := range pool {
 		l := 1 << uint(i)
 		pool[i].New = func() interface{} {
-			return &Dense{mat: blas64.General{
+			return &Dense{Mat: blas64.General{
 				Data: make([]float64, l),
 			}}
 		}
@@ -60,13 +60,13 @@ func init() {
 func getWorkspace(r, c int, clear bool) *Dense {
 	l := uint64(r * c)
 	w := pool[bits(l)].Get().(*Dense)
-	w.mat.Data = w.mat.Data[:l]
+	w.Mat.Data = w.Mat.Data[:l]
 	if clear {
-		zero(w.mat.Data)
+		zero(w.Mat.Data)
 	}
-	w.mat.Rows = r
-	w.mat.Cols = c
-	w.mat.Stride = c
+	w.Mat.Rows = r
+	w.Mat.Cols = c
+	w.Mat.Stride = c
 	w.capRows = r
 	w.capCols = c
 	return w
@@ -76,5 +76,5 @@ func getWorkspace(r, c int, clear bool) *Dense {
 // workspace pool. putWorkspace must not be called with a matrix
 // where references to the underlying data slice has been kept.
 func putWorkspace(w *Dense) {
-	pool[bits(uint64(cap(w.mat.Data)))].Put(w)
+	pool[bits(uint64(cap(w.Mat.Data)))].Put(w)
 }

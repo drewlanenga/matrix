@@ -15,7 +15,7 @@ var (
 // TriDense represents an upper or lower triangular matrix in dense storage
 // format.
 type TriDense struct {
-	mat blas64.Triangular
+	Mat blas64.Triangular
 }
 
 type Triangular interface {
@@ -60,21 +60,21 @@ func NewTriDense(n int, upper bool, mat []float64) *TriDense {
 }
 
 func (t *TriDense) Dims() (r, c int) {
-	return t.mat.N, t.mat.N
+	return t.Mat.N, t.Mat.N
 }
 
 func (t *TriDense) Triangle() (n int, upper bool) {
-	return t.mat.N, t.mat.Uplo == blas.Upper
+	return t.Mat.N, t.Mat.Uplo == blas.Upper
 }
 
 func (t *TriDense) RawTriangular() blas64.Triangular {
-	return t.mat
+	return t.Mat
 }
 
 func (t *TriDense) isZero() bool {
 	// It must be the case that t.Dims() returns
 	// zeros in this case. See comment in Reset().
-	return t.mat.Stride == 0
+	return t.Mat.Stride == 0
 }
 
 // Reset zeros the dimensions of the matrix so that it can be reused as the
@@ -84,11 +84,11 @@ func (t *TriDense) isZero() bool {
 func (t *TriDense) Reset() {
 	// No change of Stride, N to 0 may
 	// be made unless both are set to 0.
-	t.mat.N, t.mat.Stride = 0, 0
+	t.Mat.N, t.Mat.Stride = 0, 0
 	// Defensively zero Uplo to ensure
 	// it is set correctly later.
-	t.mat.Uplo = 0
-	t.mat.Data = t.mat.Data[:0]
+	t.Mat.Uplo = 0
+	t.Mat.Data = t.Mat.Data[:0]
 }
 
 // getBlasTriangular transforms t into a blas64.Triangular. If t is a RawTriangular,
@@ -130,20 +130,20 @@ func copySymIntoTriangle(t *TriDense, s Symmetric) {
 	if n != ns {
 		panic("mat64: triangle size mismatch")
 	}
-	ts := t.mat.Stride
+	ts := t.Mat.Stride
 	if rs, ok := s.(RawSymmetricer); ok {
 		sd := rs.RawSymmetric()
 		ss := sd.Stride
 		if upper {
 			if sd.Uplo == blas.Upper {
 				for i := 0; i < n; i++ {
-					copy(t.mat.Data[i*ts+i:i*ts+n], sd.Data[i*ss+i:i*ss+n])
+					copy(t.Mat.Data[i*ts+i:i*ts+n], sd.Data[i*ss+i:i*ss+n])
 				}
 				return
 			}
 			for i := 0; i < n; i++ {
 				for j := i; j < n; j++ {
-					t.mat.Data[i*ts+j] = sd.Data[j*ss+i]
+					t.Mat.Data[i*ts+j] = sd.Data[j*ss+i]
 				}
 				return
 			}
@@ -151,27 +151,27 @@ func copySymIntoTriangle(t *TriDense, s Symmetric) {
 		if sd.Uplo == blas.Upper {
 			for i := 0; i < n; i++ {
 				for j := 0; j <= i; j++ {
-					t.mat.Data[i*ts+j] = sd.Data[j*ss+i]
+					t.Mat.Data[i*ts+j] = sd.Data[j*ss+i]
 				}
 			}
 			return
 		}
 		for i := 0; i < n; i++ {
-			copy(t.mat.Data[i*ts:i*ts+i+1], sd.Data[i*ss:i*ss+i+1])
+			copy(t.Mat.Data[i*ts:i*ts+i+1], sd.Data[i*ss:i*ss+i+1])
 		}
 		return
 	}
 	if upper {
 		for i := 0; i < n; i++ {
 			for j := i; j < n; j++ {
-				t.mat.Data[i*ts+j] = s.At(i, j)
+				t.Mat.Data[i*ts+j] = s.At(i, j)
 			}
 		}
 		return
 	}
 	for i := 0; i < n; i++ {
 		for j := 0; j <= i; j++ {
-			t.mat.Data[i*ts+j] = s.At(i, j)
+			t.Mat.Data[i*ts+j] = s.At(i, j)
 		}
 	}
 }

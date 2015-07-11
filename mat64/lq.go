@@ -118,7 +118,7 @@ func (f LQFactor) applyQTo(x *Dense, trans bool) {
 			sub := x.View(k, 0, m-k, n).(*Dense)
 
 			blas64.Gemv(blas.Trans,
-				1, sub.mat, blas64.Vector{Inc: 1, Data: hh},
+				1, sub.Mat, blas64.Vector{Inc: 1, Data: hh},
 				0, blas64.Vector{Inc: 1, Data: proj},
 			)
 			for i := k; i < m; i++ {
@@ -136,7 +136,7 @@ func (f LQFactor) applyQTo(x *Dense, trans bool) {
 			sub := x.View(k, 0, m-k, n).(*Dense)
 
 			blas64.Gemv(blas.Trans,
-				1, sub.mat, blas64.Vector{Inc: 1, Data: hh},
+				1, sub.Mat, blas64.Vector{Inc: 1, Data: hh},
 				0, blas64.Vector{Inc: 1, Data: proj},
 			)
 			for i := k; i < m; i++ {
@@ -175,14 +175,14 @@ func (f LQFactor) Solve(b *Dense) (x *Dense) {
 	}
 	lqT := blas64.Triangular{
 		// N omitted since it is not used by Trsm.
-		Stride: lq.mat.Stride,
-		Data:   lq.mat.Data,
+		Stride: lq.Mat.Stride,
+		Data:   lq.Mat.Data,
 		Uplo:   blas.Lower,
 		Diag:   blas.NonUnit,
 	}
-	x.mat.Rows = bm
-	blas64.Trsm(blas.Left, blas.NoTrans, 1, lqT, x.mat)
-	x.mat.Rows = n
+	x.Mat.Rows = bm
+	blas64.Trsm(blas.Left, blas.NoTrans, 1, lqT, x.Mat)
+	x.Mat.Rows = n
 	for i := range tau {
 		lq.set(i, i, tau[i])
 	}

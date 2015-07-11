@@ -18,7 +18,7 @@ func (s *S) TestNewVector(c *check.C) {
 			n:    3,
 			data: []float64{4, 5, 6},
 			vector: &Vector{
-				mat: blas64.Vector{
+				Mat: blas64.Vector{
 					Data: []float64{4, 5, 6},
 					Inc:  1,
 				},
@@ -32,7 +32,7 @@ func (s *S) TestNewVector(c *check.C) {
 		c.Check(cols, check.Equals, 1, check.Commentf("Test %d", i))
 		c.Check(v, check.DeepEquals, test.vector, check.Commentf("Test %d", i))
 		v2 := NewVector(test.n, nil)
-		c.Check(v2.mat.Data, check.DeepEquals, []float64{0, 0, 0}, check.Commentf("Test %d", i))
+		c.Check(v2.Mat.Data, check.DeepEquals, []float64{0, 0, 0}, check.Commentf("Test %d", i))
 	}
 }
 
@@ -42,7 +42,7 @@ func (s *S) TestVectorAtSet(c *check.C) {
 	}{
 		{
 			vector: &Vector{
-				mat: blas64.Vector{
+				Mat: blas64.Vector{
 					Data: []float64{0, 1, 2},
 					Inc:  1,
 				},
@@ -51,7 +51,7 @@ func (s *S) TestVectorAtSet(c *check.C) {
 		},
 		{
 			vector: &Vector{
-				mat: blas64.Vector{
+				Mat: blas64.Vector{
 					Data: []float64{0, 10, 10, 1, 10, 10, 2},
 					Inc:  3,
 				},
@@ -117,14 +117,14 @@ func (s *S) TestVectorMul(c *check.C) {
 		v2.MulVec(a, false, v)
 		var v2M Dense
 		v2M.Mul(a, v)
-		same := floats.EqualApprox(v2.mat.Data, v2M.mat.Data, 1e-14)
+		same := floats.EqualApprox(v2.Mat.Data, v2M.Mat.Data, 1e-14)
 		c.Check(same, check.Equals, true, check.Commentf("Test %d", i))
 
 		var aT Dense
 		v2.Reset()
 		aT.TCopy(a)
 		v2.MulVec(&aT, true, v)
-		same = floats.EqualApprox(v2.mat.Data, v2M.mat.Data, 1e-14)
+		same = floats.EqualApprox(v2.Mat.Data, v2M.Mat.Data, 1e-14)
 		c.Check(same, check.Equals, true, check.Commentf("Test %d", i))
 
 		// Try with anonymous matrix type

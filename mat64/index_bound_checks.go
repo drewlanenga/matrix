@@ -16,13 +16,13 @@ func (m *Dense) At(r, c int) float64 {
 }
 
 func (m *Dense) at(r, c int) float64 {
-	if r >= m.mat.Rows || r < 0 {
+	if r >= m.Mat.Rows || r < 0 {
 		panic(ErrRowAccess)
 	}
-	if c >= m.mat.Cols || c < 0 {
+	if c >= m.Mat.Cols || c < 0 {
 		panic(ErrColAccess)
 	}
-	return m.mat.Data[r*m.mat.Stride+c]
+	return m.Mat.Data[r*m.Mat.Stride+c]
 }
 
 // Set sets the element at row r, column c to the value v.
@@ -31,13 +31,13 @@ func (m *Dense) Set(r, c int, v float64) {
 }
 
 func (m *Dense) set(r, c int, v float64) {
-	if r >= m.mat.Rows || r < 0 {
+	if r >= m.Mat.Rows || r < 0 {
 		panic(ErrRowAccess)
 	}
-	if c >= m.mat.Cols || c < 0 {
+	if c >= m.Mat.Cols || c < 0 {
 		panic(ErrColAccess)
 	}
-	m.mat.Data[r*m.mat.Stride+c] = v
+	m.Mat.Data[r*m.Mat.Stride+c] = v
 }
 
 // At returns the element at row r, column c. It panics if c is not zero.
@@ -52,7 +52,7 @@ func (v *Vector) at(r int) float64 {
 	if r < 0 || r >= v.n {
 		panic(ErrRowAccess)
 	}
-	return v.mat.Data[r*v.mat.Inc]
+	return v.Mat.Data[r*v.Mat.Inc]
 }
 
 // Set sets the element at (r,c) to the value val. It panics if c is not zero.
@@ -67,7 +67,7 @@ func (v *Vector) set(r int, val float64) {
 	if r < 0 || r >= v.n {
 		panic(ErrRowAccess)
 	}
-	v.mat.Data[r*v.mat.Inc] = val
+	v.Mat.Data[r*v.Mat.Inc] = val
 }
 
 // At returns the element at row r and column c.
@@ -76,16 +76,16 @@ func (t *SymDense) At(r, c int) float64 {
 }
 
 func (t *SymDense) at(r, c int) float64 {
-	if r >= t.mat.N || r < 0 {
+	if r >= t.Mat.N || r < 0 {
 		panic(ErrRowAccess)
 	}
-	if c >= t.mat.N || c < 0 {
+	if c >= t.Mat.N || c < 0 {
 		panic(ErrColAccess)
 	}
 	if r > c {
 		r, c = c, r
 	}
-	return t.mat.Data[r*t.mat.Stride+c]
+	return t.Mat.Data[r*t.Mat.Stride+c]
 }
 
 // SetSym sets the elements at (r,c) and (c,r) to the value v.
@@ -94,16 +94,16 @@ func (t *SymDense) SetSym(r, c int, v float64) {
 }
 
 func (t *SymDense) set(r, c int, v float64) {
-	if r >= t.mat.N || r < 0 {
+	if r >= t.Mat.N || r < 0 {
 		panic(ErrRowAccess)
 	}
-	if c >= t.mat.N || c < 0 {
+	if c >= t.Mat.N || c < 0 {
 		panic(ErrColAccess)
 	}
 	if r > c {
 		r, c = c, r
 	}
-	t.mat.Data[r*t.mat.Stride+c] = v
+	t.Mat.Data[r*t.Mat.Stride+c] = v
 }
 
 // At returns the element at row r, column c.
@@ -112,22 +112,22 @@ func (t *TriDense) At(r, c int) float64 {
 }
 
 func (t *TriDense) at(r, c int) float64 {
-	if r >= t.mat.N || r < 0 {
+	if r >= t.Mat.N || r < 0 {
 		panic(ErrRowAccess)
 	}
-	if c >= t.mat.N || c < 0 {
+	if c >= t.Mat.N || c < 0 {
 		panic(ErrColAccess)
 	}
-	if t.mat.Uplo == blas.Upper {
+	if t.Mat.Uplo == blas.Upper {
 		if r > c {
 			return 0
 		}
-		return t.mat.Data[r*t.mat.Stride+c]
+		return t.Mat.Data[r*t.Mat.Stride+c]
 	}
 	if r < c {
 		return 0
 	}
-	return t.mat.Data[r*t.mat.Stride+c]
+	return t.Mat.Data[r*t.Mat.Stride+c]
 }
 
 // SetTri sets the element of the triangular matrix at row r, column c to the value v.
@@ -137,17 +137,17 @@ func (t *TriDense) SetTri(r, c int, v float64) {
 }
 
 func (t *TriDense) set(r, c int, v float64) {
-	if r >= t.mat.N || r < 0 {
+	if r >= t.Mat.N || r < 0 {
 		panic(ErrRowAccess)
 	}
-	if c >= t.mat.N || c < 0 {
+	if c >= t.Mat.N || c < 0 {
 		panic(ErrColAccess)
 	}
-	if t.mat.Uplo == blas.Upper && r > c {
+	if t.Mat.Uplo == blas.Upper && r > c {
 		panic("mat64: triangular set out of bounds")
 	}
-	if t.mat.Uplo == blas.Lower && r < c {
+	if t.Mat.Uplo == blas.Lower && r < c {
 		panic("mat64: triangular set out of bounds")
 	}
-	t.mat.Data[r*t.mat.Stride+c] = v
+	t.Mat.Data[r*t.Mat.Stride+c] = v
 }

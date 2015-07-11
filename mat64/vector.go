@@ -45,7 +45,7 @@ var (
 
 // Vector represents a column vector.
 type Vector struct {
-	mat blas64.Vector
+	Mat blas64.Vector
 	n   int
 	// A BLAS vector can have a negative increment, but allowing this
 	// in the mat64 type complicates a lot of code, and doesn't gain anything.
@@ -63,7 +63,7 @@ func NewVector(n int, data []float64) *Vector {
 		data = make([]float64, n)
 	}
 	return &Vector{
-		mat: blas64.Vector{
+		Mat: blas64.Vector{
 			Inc:  1,
 			Data: data,
 		},
@@ -81,9 +81,9 @@ func (v *Vector) ViewVec(i, n int) *Vector {
 	}
 	return &Vector{
 		n: n,
-		mat: blas64.Vector{
-			Inc:  v.mat.Inc,
-			Data: v.mat.Data[i*v.mat.Inc:],
+		Mat: blas64.Vector{
+			Inc:  v.Mat.Inc,
+			Data: v.Mat.Data[i*v.Mat.Inc:],
 		},
 	}
 }
@@ -96,13 +96,13 @@ func (v *Vector) Len() int {
 }
 
 func (v *Vector) Reset() {
-	v.mat.Data = v.mat.Data[:0]
-	v.mat.Inc = 0
+	v.Mat.Data = v.Mat.Data[:0]
+	v.Mat.Inc = 0
 	v.n = 0
 }
 
 func (v *Vector) RawVector() blas64.Vector {
-	return v.mat
+	return v.Mat
 }
 
 // CopyVec makes a copy of elements of a into the receiver. It is similar to the
@@ -110,7 +110,7 @@ func (v *Vector) RawVector() blas64.Vector {
 // returns the number of rows and columns it copied.
 func (v *Vector) CopyVec(a *Vector) (n int) {
 	n = min(v.Len(), a.Len())
-	blas64.Copy(n, a.mat, v.mat)
+	blas64.Copy(n, a.Mat, v.Mat)
 	return n
 }
 
@@ -127,7 +127,7 @@ func (v *Vector) AddVec(a, b *Vector) {
 
 	amat, bmat := a.RawVector(), b.RawVector()
 	for i := 0; i < v.n; i++ {
-		v.mat.Data[i*v.mat.Inc] = amat.Data[i*amat.Inc] + bmat.Data[i*bmat.Inc]
+		v.Mat.Data[i*v.Mat.Inc] = amat.Data[i*amat.Inc] + bmat.Data[i*bmat.Inc]
 	}
 }
 
@@ -144,7 +144,7 @@ func (v *Vector) SubVec(a, b *Vector) {
 
 	amat, bmat := a.RawVector(), b.RawVector()
 	for i := 0; i < v.n; i++ {
-		v.mat.Data[i*v.mat.Inc] = amat.Data[i*amat.Inc] - bmat.Data[i*bmat.Inc]
+		v.Mat.Data[i*v.Mat.Inc] = amat.Data[i*amat.Inc] - bmat.Data[i*bmat.Inc]
 	}
 }
 
@@ -162,7 +162,7 @@ func (v *Vector) MulElemVec(a, b *Vector) {
 
 	amat, bmat := a.RawVector(), b.RawVector()
 	for i := 0; i < v.n; i++ {
-		v.mat.Data[i*v.mat.Inc] = amat.Data[i*amat.Inc] * bmat.Data[i*bmat.Inc]
+		v.Mat.Data[i*v.Mat.Inc] = amat.Data[i*amat.Inc] * bmat.Data[i*bmat.Inc]
 	}
 }
 
@@ -180,7 +180,7 @@ func (v *Vector) DivElemVec(a, b *Vector) {
 
 	amat, bmat := a.RawVector(), b.RawVector()
 	for i := 0; i < v.n; i++ {
-		v.mat.Data[i*v.mat.Inc] = amat.Data[i*amat.Inc] / bmat.Data[i*bmat.Inc]
+		v.Mat.Data[i*v.Mat.Inc] = amat.Data[i*amat.Inc] / bmat.Data[i*bmat.Inc]
 	}
 }
 
@@ -206,12 +206,12 @@ func (v *Vector) MulVec(a Matrix, trans bool, b *Vector) {
 	}
 	if w.n == 0 {
 		if trans {
-			w.mat.Data = use(w.mat.Data, ac)
+			w.Mat.Data = use(w.Mat.Data, ac)
 		} else {
-			w.mat.Data = use(w.mat.Data, ar)
+			w.Mat.Data = use(w.Mat.Data, ar)
 		}
 
-		w.mat.Inc = 1
+		w.Mat.Inc = 1
 		w.n = ar
 		if trans {
 			w.n = ac
@@ -231,7 +231,7 @@ func (v *Vector) MulVec(a Matrix, trans bool, b *Vector) {
 	switch a := a.(type) {
 	case RawSymmetricer:
 		amat := a.RawSymmetric()
-		blas64.Symv(1, amat, b.mat, 0, w.mat)
+		blas64.Symv(1, amat, b.Mat, 0, w.Mat)
 	case RawTriangular:
 		w.CopyVec(b)
 		amat := a.RawTriangular()
@@ -239,29 +239,29 @@ func (v *Vector) MulVec(a Matrix, trans bool, b *Vector) {
 		if trans {
 			ta = blas.Trans
 		}
-		blas64.Trmv(ta, amat, w.mat)
+		blas64.Trmv(ta, amat, w.Mat)
 	case RawMatrixer:
 		amat := a.RawMatrix()
 		t := blas.NoTrans
 		if trans {
 			t = blas.Trans
 		}
-		blas64.Gemv(t, 1, amat, b.mat, 0, w.mat)
+		blas64.Gemv(t, 1, amat, b.Mat, 0, w.Mat)
 	case Vectorer:
 		if trans {
 			col := make([]float64, ar)
 			for c := 0; c < ac; c++ {
-				w.mat.Data[c*w.mat.Inc] = blas64.Dot(ar,
+				w.Mat.Data[c*w.Mat.Inc] = blas64.Dot(ar,
 					blas64.Vector{Inc: 1, Data: a.Col(col, c)},
-					b.mat,
+					b.Mat,
 				)
 			}
 		} else {
 			row := make([]float64, ac)
 			for r := 0; r < ar; r++ {
-				w.mat.Data[r*w.mat.Inc] = blas64.Dot(ac,
+				w.Mat.Data[r*w.Mat.Inc] = blas64.Dot(ac,
 					blas64.Vector{Inc: 1, Data: a.Row(row, r)},
-					b.mat,
+					b.Mat,
 				)
 			}
 		}
@@ -274,9 +274,9 @@ func (v *Vector) MulVec(a Matrix, trans bool, b *Vector) {
 				}
 				var f float64
 				for i, e := range col {
-					f += e * b.mat.Data[i*b.mat.Inc]
+					f += e * b.Mat.Data[i*b.Mat.Inc]
 				}
-				w.mat.Data[c*w.mat.Inc] = f
+				w.Mat.Data[c*w.Mat.Inc] = f
 			}
 		} else {
 			row := make([]float64, ac)
@@ -286,9 +286,9 @@ func (v *Vector) MulVec(a Matrix, trans bool, b *Vector) {
 				}
 				var f float64
 				for i, e := range row {
-					f += e * b.mat.Data[i*b.mat.Inc]
+					f += e * b.Mat.Data[i*b.Mat.Inc]
 				}
-				w.mat.Data[r*w.mat.Inc] = f
+				w.Mat.Data[r*w.Mat.Inc] = f
 			}
 		}
 	}
@@ -304,7 +304,7 @@ func (v *Vector) EqualsVec(b *Vector) bool {
 		return false
 	}
 	for i := 0; i < n; i++ {
-		if v.mat.Data[i*v.mat.Inc] != b.mat.Data[i*b.mat.Inc] {
+		if v.Mat.Data[i*v.Mat.Inc] != b.Mat.Data[i*b.Mat.Inc] {
 			return false
 		}
 	}
@@ -320,7 +320,7 @@ func (v *Vector) EqualsApproxVec(b *Vector, epsilon float64) bool {
 		return false
 	}
 	for i := 0; i < n; i++ {
-		if math.Abs(v.mat.Data[i*v.mat.Inc]-b.mat.Data[i*b.mat.Inc]) > epsilon {
+		if math.Abs(v.Mat.Data[i*v.Mat.Inc]-b.Mat.Data[i*b.Mat.Inc]) > epsilon {
 			return false
 		}
 	}
@@ -331,9 +331,9 @@ func (v *Vector) EqualsApproxVec(b *Vector, epsilon float64) bool {
 // or checks that a non-empty matrix is r×1.
 func (v *Vector) reuseAs(r int) {
 	if v.isZero() {
-		v.mat = blas64.Vector{
+		v.Mat = blas64.Vector{
 			Inc:  1,
-			Data: use(v.mat.Data, r),
+			Data: use(v.Mat.Data, r),
 		}
 		v.n = r
 		return
@@ -346,5 +346,5 @@ func (v *Vector) reuseAs(r int) {
 func (v *Vector) isZero() bool {
 	// It must be the case that v.Dims() returns
 	// zeros in this case. See comment in Reset().
-	return v.mat.Inc == 0
+	return v.Mat.Inc == 0
 }

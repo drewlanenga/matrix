@@ -39,32 +39,32 @@ func Inner(x *Vector, A Matrix, y *Vector) float64 {
 		for i := 0; i < x.Len(); i++ {
 			xi := x.at(i)
 			if xi != 0 {
-				if y.mat.Inc == 1 {
+				if y.Mat.Inc == 1 {
 					sum += xi * asm.DdotUnitary(
 						bmat.Data[i*bmat.Stride+i:i*bmat.Stride+n],
-						y.mat.Data[i:],
+						y.Mat.Data[i:],
 					)
 				} else {
 					sum += xi * asm.DdotInc(
 						bmat.Data[i*bmat.Stride+i:i*bmat.Stride+n],
-						y.mat.Data[i*y.mat.Inc:], uintptr(n-i),
-						1, uintptr(y.mat.Inc),
+						y.Mat.Data[i*y.Mat.Inc:], uintptr(n-i),
+						1, uintptr(y.Mat.Inc),
 						0, 0,
 					)
 				}
 			}
 			yi := y.at(i)
 			if i != n-1 && yi != 0 {
-				if x.mat.Inc == 1 {
+				if x.Mat.Inc == 1 {
 					sum += yi * asm.DdotUnitary(
 						bmat.Data[i*bmat.Stride+i+1:i*bmat.Stride+n],
-						x.mat.Data[i+1:],
+						x.Mat.Data[i+1:],
 					)
 				} else {
 					sum += yi * asm.DdotInc(
 						bmat.Data[i*bmat.Stride+i+1:i*bmat.Stride+n],
-						x.mat.Data[(i+1)*x.mat.Inc:], uintptr(n-i-1),
-						1, uintptr(x.mat.Inc),
+						x.Mat.Data[(i+1)*x.Mat.Inc:], uintptr(n-i-1),
+						1, uintptr(x.Mat.Inc),
 						0, 0,
 					)
 				}
@@ -75,16 +75,16 @@ func Inner(x *Vector, A Matrix, y *Vector) float64 {
 		for i := 0; i < x.Len(); i++ {
 			xi := x.at(i)
 			if xi != 0 {
-				if y.mat.Inc == 1 {
+				if y.Mat.Inc == 1 {
 					sum += xi * asm.DdotUnitary(
 						bmat.Data[i*bmat.Stride:i*bmat.Stride+n],
-						y.mat.Data,
+						y.Mat.Data,
 					)
 				} else {
 					sum += xi * asm.DdotInc(
 						bmat.Data[i*bmat.Stride:i*bmat.Stride+n],
-						y.mat.Data, uintptr(n),
-						1, uintptr(y.mat.Inc),
+						y.Mat.Data, uintptr(n),
+						1, uintptr(y.Mat.Inc),
 						0, 0,
 					)
 				}

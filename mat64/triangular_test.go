@@ -3,6 +3,7 @@ package mat64
 import (
 	"github.com/gonum/blas"
 	"github.com/gonum/blas/blas64"
+
 	"gopkg.in/check.v1"
 )
 
@@ -11,7 +12,7 @@ func (s *S) TestNewTriangular(c *check.C) {
 		data  []float64
 		N     int
 		upper bool
-		mat   *TriDense
+		Mat   *TriDense
 	}{
 		{
 			data: []float64{
@@ -21,7 +22,7 @@ func (s *S) TestNewTriangular(c *check.C) {
 			},
 			N:     3,
 			upper: true,
-			mat: &TriDense{blas64.Triangular{
+			Mat: &TriDense{blas64.Triangular{
 				N:      3,
 				Stride: 3,
 				Uplo:   blas.Upper,
@@ -34,7 +35,7 @@ func (s *S) TestNewTriangular(c *check.C) {
 		rows, cols := t.Dims()
 		c.Check(rows, check.Equals, test.N, check.Commentf("Test %d", i))
 		c.Check(cols, check.Equals, test.N, check.Commentf("Test %d", i))
-		c.Check(t, check.DeepEquals, test.mat, check.Commentf("Test %d", i))
+		c.Check(t, check.DeepEquals, test.Mat, check.Commentf("Test %d", i))
 	}
 }
 func (s *S) TestTriAtSet(c *check.C) {
@@ -61,12 +62,12 @@ func (s *S) TestTriAtSet(c *check.C) {
 	c.Check(func() { t.SetTri(-1, 0, 1.2) }, check.PanicMatches, ErrRowAccess.Error(), check.Commentf("Test row out of bounds"))
 	c.Check(func() { t.SetTri(0, -1, 1.2) }, check.PanicMatches, ErrColAccess.Error(), check.Commentf("Test col out of bounds"))
 	c.Check(func() { t.SetTri(2, 1, 1.2) }, check.PanicMatches, "mat64: triangular set out of bounds", check.Commentf("Test lower access"))
-	t.mat.Uplo = blas.Lower
+	t.Mat.Uplo = blas.Lower
 	c.Check(func() { t.SetTri(1, 2, 1.2) }, check.PanicMatches, "mat64: triangular set out of bounds", check.Commentf("Test upper access"))
 	c.Check(t.At(2, 1), check.Equals, 8.0)
 	t.SetTri(2, 1, 15)
 	c.Check(t.At(2, 1), check.Equals, 15.0)
-	t.mat.Uplo = blas.Upper
+	t.Mat.Uplo = blas.Upper
 	c.Check(t.At(1, 2), check.Equals, 6.0)
 	t.SetTri(1, 2, 15)
 	c.Check(t.At(1, 2), check.Equals, 15.0)

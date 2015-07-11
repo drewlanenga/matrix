@@ -5,6 +5,7 @@ import (
 
 	"github.com/gonum/blas"
 	"github.com/gonum/blas/blas64"
+
 	"gopkg.in/check.v1"
 )
 
@@ -12,7 +13,7 @@ func (s *S) TestNewSymmetric(c *check.C) {
 	for i, test := range []struct {
 		data []float64
 		N    int
-		mat  *SymDense
+		Mat  *SymDense
 	}{
 		{
 			data: []float64{
@@ -21,7 +22,7 @@ func (s *S) TestNewSymmetric(c *check.C) {
 				7, 8, 9,
 			},
 			N: 3,
-			mat: &SymDense{blas64.Symmetric{
+			Mat: &SymDense{blas64.Symmetric{
 				N:      3,
 				Stride: 3,
 				Uplo:   blas.Upper,
@@ -33,10 +34,10 @@ func (s *S) TestNewSymmetric(c *check.C) {
 		rows, cols := t.Dims()
 		c.Check(rows, check.Equals, test.N, check.Commentf("Test %d", i))
 		c.Check(cols, check.Equals, test.N, check.Commentf("Test %d", i))
-		c.Check(t, check.DeepEquals, test.mat, check.Commentf("Test %d", i))
+		c.Check(t, check.DeepEquals, test.Mat, check.Commentf("Test %d", i))
 
 		m := NewDense(test.N, test.N, test.data)
-		c.Check(t.mat.Data, check.DeepEquals, m.mat.Data, check.Commentf("Test %d", i))
+		c.Check(t.Mat.Data, check.DeepEquals, m.Mat.Data, check.Commentf("Test %d", i))
 
 		c.Check(func() { NewSymDense(3, []float64{1, 2}) }, check.PanicMatches, ErrShape.Error())
 	}
@@ -89,12 +90,12 @@ func (s *S) TestSymAdd(c *check.C) {
 	} {
 		n := test.n
 		a := NewSymDense(n, nil)
-		for i := range a.mat.Data {
-			a.mat.Data[i] = rand.Float64()
+		for i := range a.Mat.Data {
+			a.Mat.Data[i] = rand.Float64()
 		}
 		b := NewSymDense(n, nil)
-		for i := range a.mat.Data {
-			b.mat.Data[i] = rand.Float64()
+		for i := range a.Mat.Data {
+			b.Mat.Data[i] = rand.Float64()
 		}
 		var m Dense
 		m.Add(a, b)
@@ -134,8 +135,8 @@ func (s *S) TestCopy(c *check.C) {
 	} {
 		n := test.n
 		a := NewSymDense(n, nil)
-		for i := range a.mat.Data {
-			a.mat.Data[i] = rand.Float64()
+		for i := range a.Mat.Data {
+			a.Mat.Data[i] = rand.Float64()
 		}
 		s := NewSymDense(n, nil)
 		s.CopySym(a)
@@ -162,8 +163,8 @@ func (s *S) TestSymRankOne(c *check.C) {
 		n := test.n
 		alpha := 2.0
 		a := NewSymDense(n, nil)
-		for i := range a.mat.Data {
-			a.mat.Data[i] = rand.Float64()
+		for i := range a.Mat.Data {
+			a.Mat.Data[i] = rand.Float64()
 		}
 		x := make([]float64, n)
 		for i := range x {
@@ -187,7 +188,7 @@ func (s *S) TestSymRankOne(c *check.C) {
 		}
 
 		// Check with reused receiver
-		copy(s.mat.Data, a.mat.Data)
+		copy(s.Mat.Data, a.Mat.Data)
 		s.SymRankOne(s, alpha, x)
 		for i := 0; i < n; i++ {
 			for j := i; j < n; j++ {
@@ -212,8 +213,8 @@ func (s *S) TestRankTwo(c *check.C) {
 		n := test.n
 		alpha := 2.0
 		a := NewSymDense(n, nil)
-		for i := range a.mat.Data {
-			a.mat.Data[i] = rand.Float64()
+		for i := range a.Mat.Data {
+			a.Mat.Data[i] = rand.Float64()
 		}
 		x := make([]float64, n)
 		y := make([]float64, n)
@@ -243,7 +244,7 @@ func (s *S) TestRankTwo(c *check.C) {
 		}
 
 		// Check with reused receiver
-		copy(s.mat.Data, a.mat.Data)
+		copy(s.Mat.Data, a.Mat.Data)
 		s.RankTwo(s, alpha, x, y)
 		for i := 0; i < n; i++ {
 			for j := i; j < n; j++ {

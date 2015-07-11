@@ -20,22 +20,22 @@ const badTriangle = "mat64: invalid triangle"
 func (t *TriDense) Cholesky(a *SymDense, upper bool) (ok bool) {
 	n := a.Symmetric()
 	if t.isZero() {
-		t.mat = blas64.Triangular{
+		t.Mat = blas64.Triangular{
 			N:      n,
 			Stride: n,
 			Diag:   blas.NonUnit,
-			Data:   use(t.mat.Data, n*n),
+			Data:   use(t.Mat.Data, n*n),
 		}
 		if upper {
-			t.mat.Uplo = blas.Upper
+			t.Mat.Uplo = blas.Upper
 		} else {
-			t.mat.Uplo = blas.Lower
+			t.Mat.Uplo = blas.Lower
 		}
 	} else {
-		if n != t.mat.N {
+		if n != t.Mat.N {
 			panic(ErrShape)
 		}
-		if (upper && t.mat.Uplo != blas.Upper) || (!upper && t.mat.Uplo != blas.Lower) {
+		if (upper && t.Mat.Uplo != blas.Upper) || (!upper && t.Mat.Uplo != blas.Lower) {
 			panic(ErrTriangle)
 		}
 	}
@@ -44,10 +44,10 @@ func (t *TriDense) Cholesky(a *SymDense, upper bool) (ok bool) {
 	// Potrf modifies the data in place
 	_, ok = lapack64.Potrf(
 		blas64.Symmetric{
-			N:      t.mat.N,
-			Stride: t.mat.Stride,
-			Data:   t.mat.Data,
-			Uplo:   t.mat.Uplo,
+			N:      t.Mat.N,
+			Stride: t.Mat.Stride,
+			Data:   t.Mat.Data,
+			Uplo:   t.Mat.Uplo,
 		})
 	return ok
 }
@@ -73,11 +73,11 @@ func (m *Dense) SolveCholesky(t Triangular, b Matrix) {
 
 	switch ta.Uplo {
 	case blas.Upper:
-		blas64.Trsm(blas.Left, blas.Trans, 1, ta, m.mat)
-		blas64.Trsm(blas.Left, blas.NoTrans, 1, ta, m.mat)
+		blas64.Trsm(blas.Left, blas.Trans, 1, ta, m.Mat)
+		blas64.Trsm(blas.Left, blas.NoTrans, 1, ta, m.Mat)
 	case blas.Lower:
-		blas64.Trsm(blas.Left, blas.NoTrans, 1, ta, m.mat)
-		blas64.Trsm(blas.Left, blas.Trans, 1, ta, m.mat)
+		blas64.Trsm(blas.Left, blas.NoTrans, 1, ta, m.Mat)
+		blas64.Trsm(blas.Left, blas.Trans, 1, ta, m.Mat)
 	default:
 		panic(badTriangle)
 	}
@@ -99,11 +99,11 @@ func (v *Vector) SolveCholeskyVec(t Triangular, b *Vector) {
 	ta := getBlasTriangular(t)
 	switch ta.Uplo {
 	case blas.Upper:
-		blas64.Trsv(blas.Trans, ta, v.mat)
-		blas64.Trsv(blas.NoTrans, ta, v.mat)
+		blas64.Trsv(blas.Trans, ta, v.Mat)
+		blas64.Trsv(blas.NoTrans, ta, v.Mat)
 	case blas.Lower:
-		blas64.Trsv(blas.NoTrans, ta, v.mat)
-		blas64.Trsv(blas.Trans, ta, v.mat)
+		blas64.Trsv(blas.NoTrans, ta, v.Mat)
+		blas64.Trsv(blas.Trans, ta, v.Mat)
 	default:
 		panic(badTriangle)
 	}
@@ -133,7 +133,7 @@ func (m *Dense) SolveTri(a Triangular, trans bool, b Matrix) {
 	}
 	switch ta.Uplo {
 	case blas.Upper, blas.Lower:
-		blas64.Trsm(blas.Left, t, 1, ta, m.mat)
+		blas64.Trsm(blas.Left, t, 1, ta, m.Mat)
 	default:
 		panic(badTriangle)
 	}
